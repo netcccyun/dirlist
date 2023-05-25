@@ -191,6 +191,6 @@ if($conf['readme_md'] == 1 && $r['readme_md']){
 ?>
 	</div>
 <?php include PAGE_ROOT.'footer.php';?>
-<script src="./_dir/static/js/main.js"></script>
+<script src="./_dir/static/js/main.js?v=<?php echo VERSION?>"></script>
 </body>
 </html>

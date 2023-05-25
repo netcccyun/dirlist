@@ -151,6 +151,6 @@ include PAGE_ROOT.'header.php';
 	</div>
 
 <?php include PAGE_ROOT.'footer.php';?>
-<script src="./_dir/static/js/admin.js"></script>
+<script src="./_dir/static/js/admin.js?v=<?php echo VERSION?>"></script>
 </body>
 </html>
