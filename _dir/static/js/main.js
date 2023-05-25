@@ -1,4 +1,5 @@
 var pageurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+var page_reload = false;
 
 function copy(src){
     var url = pageurl + src.slice(2);
@@ -142,3 +143,401 @@ function view_office(name, src){
 	  	content: apiurl
 	});
 }
+
+function submitpasswd(){
+    var dir = $("#dir").val();
+    var passwd = $("input[name='passwd']").val();
+    var ii = layer.load();
+    $.ajax({
+        type : 'POST',
+        url : './?dir=' + encodeURIComponent(dir),
+        data : {passwd:passwd},
+        dataType : 'json',
+        success : function(data) {
+            layer.close(ii);
+            if(data.code == 0){
+                window.location.reload();
+            }else{
+                layer.msg(data.msg, {icon:2, time:1000});
+            }
+        }
+    });
+    return false;
+}
+
+function change_checkboxes(e, t) { for (var n = e.length - 1; n >= 0; n--) e[n].checked = "boolean" == typeof t ? t : !e[n].checked }
+function get_checkboxes() { for (var e = document.getElementsByName("file[]"), t = [], n = e.length - 1; n >= 0; n--) (e[n].type = "checkbox") && t.push(e[n]); return t }
+function checkbox_toggle(obj) { change_checkboxes(get_checkboxes(), obj.checked) }
+function get_checked_values() {
+    var chk_value = new Array();
+    $("input[name='file[]']:checked").each(function(){
+        chk_value.push($(this).val());
+    })
+    return chk_value;
+}
+
+function admin_upload(){
+    var dir = $("#dir").val();
+    if($(window).width() > 768){
+        layer.open({
+            type:2,
+            title: false,
+            area: ["720px",";max-height:100%;min-height:490px"],
+            content: './?c=upload&path=' + encodeURIComponent(dir),
+            end: function(){
+                if(page_reload){
+                    window.location.reload()
+                }
+            }
+        });
+    }else{
+        layer.open({
+            type:2,
+            title: '上传',
+            shadeClose: true,
+            skin: 'layui-layer-molv',
+            area: ["100%",";max-height:100%;min-height:490px"],
+            content: './?c=upload&path=' + encodeURIComponent(dir),
+            end: function(){
+                if(page_reload){
+                    window.location.reload()
+                }
+            }
+        });
+    }
+}
+
+function admin_create(){
+    var dir = $("#dir").val();
+    layer.open({
+        area: ['360px'],
+        title: '创建文件/文件夹',
+        content: '<div><label for="newfile">文件类型 </label><br/><div class="custom-control custom-radio custom-control-inline"><input type="radio" id="customRadioInline1" name="newfile" value="file" class="custom-control-input"><label class="custom-control-label" for="customRadioInline1">文件</label></div><div class="custom-control custom-radio custom-control-inline"><input type="radio" id="customRadioInline2" name="newfile" value="folder" class="custom-control-input" checked=""><label class="custom-control-label" for="customRadioInline2">文件夹</label></div></div><div class="mt-3"><label for="newfilename">创建名称 </label><br/><input type="text" name="newfilename" id="newfilename" value="" class="form-control" placeholder="文件/文件夹名称" autocomplete="off"></div>',
+        btn: ['创建', '取消'],
+        yes: function(){
+            var newfile = $("input[name='newfile']:checked").val();
+            var newfilename = $("input[name='newfilename']").val();
+            if(newfilename == ''){
+                $("input[name='newfilename']").focus();
+                return;
+            }
+            var ii = layer.load();
+            $.ajax({
+                type : 'POST',
+                url : './?c=filemgr',
+                data : {do:'create', path:dir, type:newfile, name:newfilename},
+                dataType : 'json',
+                success : function(data) {
+                    layer.close(ii);
+                    if(data.code == 0){
+                        window.location.reload()
+                    }else{
+                        layer.alert(data.msg, {icon:2});
+                    }
+                }
+            });
+        }
+    });
+}
+
+function admin_secret(){
+    var dir = $("#dir").val();
+    var ii = layer.load();
+    $.ajax({
+        type : 'POST',
+        url : './?c=filemgr',
+        data : {do:'query_secret', path:dir},
+        dataType : 'json',
+        success : function(data) {
+            layer.close(ii);
+            if(data.code == 0){
+                layer.open({
+                    area: ['360px','240px'],
+                    title: '设置目录密码访问',
+                    content: '<div><div class="custom-control custom-radio custom-control-inline"><input type="radio" id="customRadioInline1" name="issecret" value="0" class="custom-control-input"><label class="custom-control-label" for="customRadioInline1">公开访问</label></div><div class="custom-control custom-radio custom-control-inline"><input type="radio" id="customRadioInline2" name="issecret" value="1" class="custom-control-input"><label class="custom-control-label" for="customRadioInline2">密码访问</label></div></div><div class="mt-3" id="passwd_frame" style="display:none"><label for="passwd">目录访问密码 </label><br/><input type="text" name="passwd" id="passwd" value="" class="form-control" autocomplete="off"></div>',
+                    btn: ['确定', '取消'],
+                    success: function(){
+                        var issecret = data.data.issecret;
+                        if(issecret){
+                            $("#customRadioInline2").prop('checked', true);
+                            $("#passwd_frame").show();
+                            $("#passwd").attr('placeholder','填写后可重置密码');
+                        }else{
+                            $("#customRadioInline1").prop('checked', true);
+                        }
+                        $("input[name='issecret']").click(function(){
+                            var issecret = $("input[name='issecret']:checked").val();
+                            if(issecret=='1'){
+                                $("#passwd_frame").show();
+                            }else{
+                                $("#passwd_frame").hide();
+                            }
+                        })
+                    },
+                    yes: function(){
+                        var issecret = $("input[name='issecret']:checked").val();
+                        var passwd = $("input[name='passwd']").val();
+                        if(issecret == '1' && passwd == ''){
+                            $("input[name='passwd']").focus();
+                            return;
+                        }
+                        var ii = layer.load();
+                        $.ajax({
+                            type : 'POST',
+                            url : './?c=filemgr',
+                            data : {do:'set_secret', path:dir, issecret:issecret, passwd:passwd},
+                            dataType : 'json',
+                            success : function(data) {
+                                layer.close(ii);
+                                if(data.code == 0){
+                                    layer.alert('修改成功', {icon:1}, function(){window.location.reload()});
+                                }else{
+                                    layer.alert(data.msg, {icon:2});
+                                }
+                            }
+                        });
+                    }
+                });
+            }else{
+                layer.alert(data.msg, {icon:2});
+            }
+        }
+    });
+}
+
+function admin_rename(name){
+    var dir = $("#dir").val();
+    layer.open({
+        area: ['360px'],
+        title: '重命名',
+        content: '<div><input type="text" name="newname" value="'+name+'" class="form-control" placeholder="新的名称" autocomplete="off"></div>',
+        btn: ['确定', '取消'],
+        yes: function(){
+            var newname = $("input[name='newname']").val();
+            if(newname == ''){
+                $("input[name='newname']").focus();
+                return;
+            }
+            var ii = layer.load();
+            $.ajax({
+                type : 'POST',
+                url : './?c=filemgr',
+                data : {do:'rename', path:dir, oldname:name, newname:newname},
+                dataType : 'json',
+                success : function(data) {
+                    layer.close(ii);
+                    if(data.code == 0){
+                        window.location.reload()
+                    }else{
+                        layer.alert(data.msg, {icon:2});
+                    }
+                }
+            });
+        }
+    });
+}
+
+function admin_delete(name, type){
+    var dir = $("#dir").val();
+    var typename = type == 'file'?'文件':'文件夹';
+    var confirmobj = layer.confirm('确实要删除此'+typename+'吗？删除后无法恢复', {
+        btn: ['确定','取消'], icon:0, title: '删除'+typename
+    }, function(){
+        var files = new Array();
+        files.push(name);
+        var ii = layer.load();
+        $.ajax({
+            type : 'POST',
+            url : './?c=filemgr',
+            data : {do:'delete', path:dir, files:files},
+            dataType : 'json',
+            success : function(data) {
+                layer.close(ii);
+                if(data.code == 0){
+                    layer.alert('成功删除了'+data.data+'个文件或目录', {icon:1}, function(){window.location.reload()});
+                }else{
+                    layer.alert(data.msg, {icon: 2});
+                }
+            }
+        });
+    }, function(){
+        layer.close(confirmobj);
+    });
+}
+
+function admin_delete_batch(){
+    var dir = $("#dir").val();
+    var files = get_checked_values()
+    if(files.length == 0){
+        layer.msg('未选中任何文件或文件夹', {time:1000});
+        return;
+    }
+    var confirmobj = layer.confirm('确实要删除所选的'+files.length+'个文件或目录吗？删除后无法恢复', {
+        btn: ['确定','取消'], icon:0, title: '批量删除'
+    }, function(){
+        var ii = layer.load();
+        $.ajax({
+            type : 'POST',
+            url : './?c=filemgr',
+            data : {do:'delete', path:dir, files:files},
+            dataType : 'json',
+            success : function(data) {
+                layer.close(ii);
+                if(data.code == 0){
+                    layer.alert('成功删除了'+data.data+'个文件或目录', {icon:1}, function(){window.location.reload()});
+                }else{
+                    layer.alert(data.msg, {icon: 2});
+                }
+            }
+        });
+    }, function(){
+        layer.close(confirmobj);
+    });
+}
+
+function admin_addclip(op, name){
+    var dir = $("#dir").val();
+    var opname = op == 'cut'?'剪切':'复制';
+    var files = new Array();
+    files.push(name);
+    var ii = layer.load();
+    $.ajax({
+        type : 'POST',
+        url : './?c=filemgr',
+        data : {do:'addclip', path:dir, op:op, files:files},
+        dataType : 'json',
+        success : function(data) {
+            layer.close(ii);
+            if(data.code == 0){
+                layer.msg(opname+'成功，请点击粘贴按钮', {time:1000});
+            }else{
+                layer.alert(data.msg, {icon:2});
+            }
+        }
+    });
+}
+
+function admin_addclip_batch(op){
+    var dir = $("#dir").val();
+    var opname = op == 'cut'?'剪切':'复制';
+    var files = get_checked_values()
+    if(files.length == 0){
+        layer.msg('未选中任何文件或文件夹', {time:1000});
+        return;
+    }
+    var ii = layer.load();
+    $.ajax({
+        type : 'POST',
+        url : './?c=filemgr',
+        data : {do:'addclip', path:dir, op:op, files:files},
+        dataType : 'json',
+        success : function(data) {
+            layer.close(ii);
+            if(data.code == 0){
+                layer.msg(opname+'成功，请点击粘贴按钮', {time:1000});
+            }else{
+                layer.alert(data.msg, {icon:2});
+            }
+        }
+    });
+}
+
+function admin_paste(){
+    var dir = $("#dir").val();
+    var ii = layer.load();
+    $.ajax({
+        type : 'POST',
+        url : './?c=filemgr',
+        data : {do:'paste', path:dir},
+        dataType : 'json',
+        success : function(data) {
+            layer.close(ii);
+            if(data.code == 0){
+                var opname = data.data.op == 'cut'?'剪切':'复制';
+                var count = data.data.count;
+                layer.alert('成功'+opname+'了'+count+'个文件或目录', {icon:1}, function(){window.location.reload()});
+            }else{
+                layer.msg(data.msg, {icon:2, time:1500});
+            }
+        }
+    });
+}
+
+function admin_compress(){
+    var dir = $("#dir").val();
+    var files = get_checked_values()
+    if(files.length == 0){
+        layer.msg('未选中任何文件或文件夹', {time:1000});
+        return;
+    }
+    var name = 'archive.zip';
+    if(files.length == 1) name = files[0] + '.zip';
+    layer.open({
+        area: ['360px'],
+        title: '创建压缩包文件',
+        content: '<div><label>压缩包文件名：</label><br/><input type="text" name="zipname" value="'+name+'" class="form-control" placeholder="" autocomplete="off"></div>',
+        btn: ['确定', '取消'],
+        yes: function(){
+            var zipname = $("input[name='zipname']").val();
+            if(zipname == ''){
+                $("input[name='zipname']").focus();
+                return;
+            }
+            var ii = layer.load();
+            $.ajax({
+                type : 'POST',
+                url : './?c=filemgr',
+                data : {do:'compress', path:dir, name:zipname, files:files},
+                dataType : 'json',
+                success : function(data) {
+                    layer.close(ii);
+                    if(data.code == 0){
+                        layer.alert('压缩成功', {icon:1}, function(){window.location.reload()});
+                    }else{
+                        layer.alert(data.msg, {icon:2});
+                    }
+                }
+            });
+        }
+    });
+}
+
+function admin_uncompress(name){
+    var dir = $("#dir").val();
+    if(dir == '.') dir = '/';
+    else dir = '/'+dir;
+    layer.open({
+        area: ['360px'],
+        title: '解压缩',
+        content: '<div><label>解压到：</label><br/><input type="text" name="targetdir" value="'+dir+'" class="form-control" placeholder="" autocomplete="off"></div>',
+        btn: ['确定', '取消'],
+        yes: function(){
+            var targetdir = $("input[name='targetdir']").val();
+            if(targetdir == ''){
+                $("input[name='targetdir']").focus();
+                return;
+            }
+            var ii = layer.load();
+            $.ajax({
+                type : 'POST',
+                url : './?c=filemgr',
+                data : {do:'uncompress', path:dir, targetdir:targetdir, name:name},
+                dataType : 'json',
+                success : function(data) {
+                    layer.close(ii);
+                    if(data.code == 0){
+                        layer.alert('解压缩成功', {icon:1}, function(){window.location.reload()});
+                    }else{
+                        layer.alert(data.msg, {icon:2});
+                    }
+                }
+            });
+        }
+    });
+}
+
+window.addEventListener('message', function(e){
+    if(e.data == 'reload'){
+        page_reload = true
+    }
+});

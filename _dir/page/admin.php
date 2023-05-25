@@ -1,8 +1,6 @@
 <?php
 if(!defined('DIR_INIT'))exit();
 
-if(!$islogin) exit("<script language='javascript'>window.location.href='./?c=login';</script>");
-
 if(isset($_GET['do'])){
 	if(!checkRefererHost())exit();
 	if($_GET['do'] == 'set'){
@@ -62,8 +60,8 @@ include PAGE_ROOT.'header.php';
 				<li class="nav-item" role="presentation">
 					<a class="nav-link" id="account-tab" data-toggle="tab" href="#account" role="tab" aria-controls="account" aria-selected="false">账号设置</a>
 				</li>
-				<li class="nav-item" role="presentation">
-					<a class="nav-link" id="filemgr-tab" data-toggle="tab" href="#filemgr" role="tab" aria-controls="filemgr" aria-selected="false">文件管理</a>
+				<li class="nav-item">
+					<a class="nav-link" href="./?c=admin&do=logout" onclick="return confirm('是否确定退出登录？')">退出登录</a>
 				</li>
 				</ul>
 			<div class="card">
@@ -113,6 +111,9 @@ include PAGE_ROOT.'header.php';
 	</div>
 	<div class="form-group row">
 	  <div class="offset-sm-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/>
+	  <?php if($conf['cache_indexes']>0){?>
+<hr/><button type="button" class="btn btn-warning btn-block" onclick="clearIndexes()"><i class="fa fa-trash"></i> 清除文件索引缓存</button>
+<?php }?>
 	 </div>
 	</div>
   </form>
@@ -137,20 +138,9 @@ include PAGE_ROOT.'header.php';
 	</div>
 	<div class="form-group row">
 	  <div class="offset-sm-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/>
-	  <hr/>
-	  <a class="btn btn-danger btn-block" href="./?c=admin&do=logout" onclick="return confirm('是否确定退出登录？')">退出登录</a>
 	 </div>
 	</div>
   </form>
-				</div>
-				<div class="tab-pane fade" id="filemgr" role="tabpanel" aria-labelledby="filemgr-tab">
-<hr/>
-<button type="button" class="btn btn-success btn-block" onclick="window.open('./_dir/tinyfilemanager.php')"><i class="fa fa-list-alt"></i> 打开文件管理器</button>
-<hr/>
-<?php if($conf['cache_indexes']>0){?>
-<button type="button" class="btn btn-warning btn-block" onclick="clearIndexes()"><i class="fa fa-trash"></i> 清除文件索引缓存</button>
-<hr/>
-<?php }?>
 				</div>
 				</div>
 			</div>

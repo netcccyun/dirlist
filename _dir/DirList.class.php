@@ -28,7 +28,7 @@ class DirList
         $type_image = ['png','jpg','jpeg','gif','bmp','webp','ico','svg','svgz','tif','tiff','heic','exif'];
         $type_audio = ['mp3','wav','ogg','m4a','flac','aac'];
         $type_video = ['mp4','webm','flv','f4v','mov','3gp','3gpp','avi','wmv','mkv','ts','dat','asf','mts','m2ts','m3u8', 'm4v'];
-        $type_office = ['doc','docx','xps','rtf','wps','xls','xlsx','ppt','pptx','pdf'];
+        $type_office = ['doc','docx','xps','rtf','wps','xls','xlsx','ppt','pptx'];
         $type_markdown = ['md'];
         $type_text = ['txt','text','log','yaml','yml','conf','config','ini','c','cpp','cxx','rc','php','py','cs','h','htm','html','css','less','sass','scss','js','hdml','dtd','wml','xml','xsl','vbs','vb','rtx','xsd','dpr','sql','java','go','jsp','asp','aspx','asa','asax','pl','bat','cmd','rb','reg','sh','json','lua','r','mm','mak','swift','tpl'];
         if(in_array($type, $type_image)){
@@ -168,6 +168,7 @@ class DirList
     // 扫描所有文件
     private function scan_files($dir = '.'){
         $list = [];
+        if(is_file($dir.'/.passwd') && filesize($dir.'/.passwd')>0) return $list;
         $files = scandir($dir);
         foreach($files as $file){
             if($file == '.' || $file == '..') continue;
@@ -291,6 +292,7 @@ class DirList
                     'size' => false,
                     'size_format' => '-',
                     'view_type' => false,
+                    'ext' => false,
                 ];
             }else{
                 $src = './'.implode('/', array_map('rawurlencode', explode('/', $relativePath)));
@@ -308,6 +310,7 @@ class DirList
                     'size' => $size,
                     'size_format' => $this->size_format($size),
                     'view_type' => $view_type,
+                    'ext' => $ext,
                 ];
                 if(($name == 'readme.md' || $name == 'README.md') && $size < 1024 * 1024 * 5) $readme_md = $relativePath;
             }
@@ -322,9 +325,29 @@ class DirList
             if($parentPath == '') $parent = './';
             else $parent = './?dir='.rawurlencode($this->encoding($parentPath, true));
         }
+        $passwd = $this->get_passwd($dir);
 
-        $result = ['dir' => $dir, 'list' => $listdir, 'navi' => $navi, 'parent' => $parent, 'readme_md' => $readme_md];
+        $result = ['dir' => $dir, 'list' => $listdir, 'navi' => $navi, 'parent' => $parent, 'readme_md' => $readme_md, 'passwd' => $passwd];
         return $result;
+    }
+
+    // 获取目录访问密码
+    private function get_passwd($dir){
+        if($dir!='.')$dir = './'.$dir;
+
+        $level = substr_count($dir, '/') + 1;
+        while($level > 0){
+            $file = $dir.'/.passwd';
+            if(is_file($file)){
+                $passwd = file_get_contents($file);
+                if($passwd){
+                    return $passwd;
+                }
+            }
+            $level--;
+            $dir = dirname($dir);
+        }
+        return null;
     }
 
     // 获取导航栏

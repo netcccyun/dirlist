@@ -190,3 +190,31 @@ function echo_json($arr){
 function getSid() {
     return md5(uniqid(mt_rand(), true) . microtime());
 }
+
+function curl_download($url, $localpath, $timeout = 300)
+{
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+	$fp = fopen($localpath, 'w');
+	curl_setopt($ch, CURLOPT_FILE, $fp);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36");
+	curl_exec($ch);
+	if (curl_errno($ch)) {
+		$message = curl_error($ch);
+		curl_close($ch);
+		fclose($fp);
+		throw new Exception('下载文件失败：'.$message);
+	}
+	$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	if($httpcode>299){
+		curl_close($ch);
+		fclose($fp);
+		throw new Exception('下载文件失败：HTTPCODE-'.$httpcode);
+	}
+	curl_close($ch);
+	fclose($fp);
+	return true;
+}

@@ -13,7 +13,7 @@ header('Content-Type: text/html; charset=UTF-8');
 <script src="//cdn.staticfile.org/jquery/3.6.1/jquery.min.js"></script>
 <?php if($ext == 'm3u8'){?><script src="//cdn.staticfile.org/hls.js/1.2.4/hls.min.js"></script><?php }?>
 <?php if($ext == 'flv'){?><script src="//cdn.staticfile.org/flv.js/1.6.2/flv.min.js"></script><?php }?>
-<script src="//cdn.staticfile.org/dplayer/1.27.0/DPlayer.min.js"></script>
+<script src="//cdn.staticfile.org/dplayer/1.27.1/DPlayer.min.js"></script>
 <script type="text/javascript">
     var dp = new DPlayer({
         container: document.getElementById('dplayer'),

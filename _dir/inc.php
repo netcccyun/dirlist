@@ -10,6 +10,7 @@ date_default_timezone_set("PRC");
 require SYSTEM_ROOT.'functions.php';
 require SYSTEM_ROOT.'Cache.class.php';
 require SYSTEM_ROOT.'DirList.class.php';
+require SYSTEM_ROOT.'FileMgr.class.php';
 
 $CACHE = new Cache();
 $conf = $CACHE->get('config');
