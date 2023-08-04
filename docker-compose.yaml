@@ -1,0 +1,11 @@
+version: '3.0'
+services:
+  web:
+    image: php:8.0-fpm-alpine
+    restart: always
+    working_dir:  /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - 80:80
+    command: "php -S 0.0.0.0:80"
