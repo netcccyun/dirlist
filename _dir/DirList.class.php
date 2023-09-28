@@ -30,7 +30,7 @@ class DirList
         $type_video = ['mp4','webm','flv','f4v','mov','3gp','3gpp','avi','wmv','mkv','ts','dat','asf','mts','m2ts','m3u8', 'm4v'];
         $type_office = ['doc','docx','xps','rtf','wps','xls','xlsx','ppt','pptx'];
         $type_markdown = ['md'];
-        $type_text = ['txt','text','log','yaml','yml','conf','config','ini','c','cpp','cxx','rc','php','py','cs','h','htm','html','css','less','sass','scss','js','hdml','dtd','wml','xml','xsl','vbs','vb','rtx','xsd','dpr','sql','java','go','jsp','asp','aspx','asa','asax','pl','bat','cmd','rb','reg','sh','json','lua','r','mm','mak','swift','tpl'];
+        $type_text = ['txt','text','log','yaml','yml','conf','config','ini','c','cpp','cxx','rc','php','py','cs','h','htm','html','css','less','sass','scss','js','hdml','dtd','wml','xml','xsl','vbs','vb','rtx','xsd','dpr','sql','java','go','jsp','asp','aspx','asa','asax','pl','bat','cmd','rb','reg','sh','json','lua','r','m','mm','mak','swift','tpl','vue','go'];
         if(in_array($type, $type_image)){
             return 'image';
         }elseif(in_array($type, $type_audio)){
@@ -54,7 +54,7 @@ class DirList
         $type_audio = ['mp3','wav','wma','ogg','m4a','flac','ape','aac','ra','cda','midi','mid','aif','au','voc'];
         $type_video = ['mp4','webm','flv','f4v','mov','3gp','3gpp','avi','mpg','mpeg','wmv','mkv','ts','dat','asf','rm','rmvb','ram','divx','vob','qt','fli','flc','mod','m2t','swf','mts','m2ts','mpe','div','lavf','m3u8','m4v','ogm','ogv'];
         $type_text = ['txt','text','log','md','yaml','yml','conf','config','ini'];
-        $type_code = ['c','cpp','cxx','rc','php','py','cs','h','htm','html','css','less','sass','scss','js','hdml','dtd','wml','xml','xsl','vbs','vb','rtx','xsd','dpr','sql','java','go','jsp','asp','aspx','asa','asax','pl','bat','cmd','rb','reg','sh','json','lua','r','mm','mak','swift','tpl'];
+        $type_code = ['c','cpp','cxx','rc','php','py','cs','h','htm','html','css','less','sass','scss','js','hdml','dtd','wml','xml','xsl','vbs','vb','rtx','xsd','dpr','sql','java','go','jsp','asp','aspx','asa','asax','pl','bat','cmd','rb','reg','sh','json','lua','r','m','mm','mak','swift','tpl','vue','go'];
         $type_archive = ['zip','7z','rar','tgz','gz','xz','tar','jar','iso','z','zipx','cab','bz2','arj','lz','lzh'];
         $type_word = ['doc','docx','xps','rtf','wps','odt'];
         $type_excel = ['xls','xlsx','ods'];

@@ -98,6 +98,17 @@ switch($c){
             echo_json(['code'=>-1, 'msg'=>$e->getMessage()]);
         }
         break;
+    case 'editor':
+        if(!$islogin) exit("<script language='javascript'>window.location.href='./?c=login';</script>");
+        $path = isset($_GET['path'])?trim($_GET['path']):'';
+        try{
+            $path = $x->set_dir_path($path, true);
+        }catch(Exception $e){
+            $errmsg = $e->getMessage();
+            sysmsg($errmsg);
+        }
+        include PAGE_ROOT.'editor.php';
+        break;
     case 'login':
         include PAGE_ROOT.'login.php';
         break;

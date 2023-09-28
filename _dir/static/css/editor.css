@@ -1,0 +1,39 @@
+#file_content {
+	color:#3E3E3E;
+	border-top: 1px solid #c9c6c6;
+    border-bottom: 1px solid #c9c6c6;
+	overflow-y: scroll;
+	outline: none;
+	font-size:12px;
+	height:500px;
+	width:100%;
+}
+.input_button {
+    line-height: 16px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    background: #f3f3f3;
+    background-image: linear-gradient(-189deg, #ffffff 49%,#eeeeee 81%);
+    border: 1px solid #b6b6b6;
+    cursor: pointer;
+    margin-right: 2px;
+    color: #202020;
+    font-size: 12px;
+}
+.input_button:hover {
+    background-image: linear-gradient(-217deg, #ffffff 49%,#eeeeee 81%);
+}
+.input_primary {
+    background: #99AFDA;
+    background-image: linear-gradient(154deg, #99AFDA 62%, #7592c9 107%);
+    color: #f3f3f3;
+    border: 1px solid #878D96;
+    font-weight: bold;
+    line-height: 23px;
+    font-size: 14px;
+    padding: 4px 26px;
+}
+.input_primary:hover {
+	background-image: linear-gradient(35deg, #99AFDA -45%, #819ccf 100%);
+	background-color: #a5b9df;
+}

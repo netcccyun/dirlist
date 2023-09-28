@@ -156,6 +156,7 @@ foreach($r['list'] as $item) {
 								<a class="dropdown-item" href="javascript:;" onclick="admin_addclip('cut','<?php echo $item['name']; ?>')"><i class="fa fa-cut fa-fw"></i> 剪切</a>
 								<a class="dropdown-item" href="javascript:;" onclick="admin_rename('<?php echo $item['name']; ?>')"><i class="fa fa-pencil-square-o fa-fw"></i> 重命名</a>
 								<?php if($item['ext'] == 'zip'){?><a class="dropdown-item" href="javascript:;" onclick="admin_uncompress('<?php echo $item['name']; ?>')"><i class="fa fa-file-zip-o fa-fw"></i> 解压缩</a><?php } ?>
+								<?php if($item['view_type'] == 'text'){?><a class="dropdown-item" href="javascript:;" onclick="admin_edit('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-code fa-fw"></i> 编辑</a><?php } ?>
 							</div><?php } ?>
 						</td>
 					</tr>

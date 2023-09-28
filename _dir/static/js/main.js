@@ -536,6 +536,16 @@ function admin_uncompress(name){
     });
 }
 
+function admin_edit(name, path){
+	var apiurl = './?c=editor&path=' + encodeURIComponent(path);
+	layer.open({
+		title:'文本编辑器 - ' + name,
+	  	type: 2, 
+	  	area: ['100%', '100%'],
+	  	content: apiurl
+	});
+}
+
 window.addEventListener('message', function(e){
     if(e.data == 'reload'){
         page_reload = true
