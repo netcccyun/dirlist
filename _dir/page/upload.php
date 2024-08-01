@@ -66,9 +66,9 @@ header('Content-Type: text/html; charset=UTF-8');
     <meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>上传文件</title>
-    <link rel="stylesheet" href="//cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
-	<link rel="stylesheet" href="//cdn.staticfile.org/twitter-bootstrap/4.6.1/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//cdn.staticfile.org/dropzone/5.9.3/min/dropzone.min.css">
+    <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/twitter-bootstrap/4.6.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
 </head>
 <body>
 <style>
@@ -135,10 +135,10 @@ form.dropzone { min-height:280px;border:2px dashed #007bff;line-height:6rem; }
         </div>
     </div>
 </div>
-<script src="//cdn.staticfile.org/jquery/3.6.1/jquery.min.js"></script>
-<script src="//cdn.staticfile.org/twitter-bootstrap/4.6.1/js/bootstrap.min.js"></script>
-<script src="//cdn.staticfile.org/layer/3.1.1/layer.js"></script>
-<script src="//cdn.staticfile.org/dropzone/5.9.3/min/dropzone.min.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/twitter-bootstrap/4.6.1/js/bootstrap.min.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/layer/3.1.1/layer.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
 <script>
     Dropzone.options.fileUploader = {
         chunking: true,

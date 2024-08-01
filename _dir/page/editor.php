@@ -43,11 +43,11 @@ header('Content-Type: text/html; charset=UTF-8');
 	<input type="submit" value="保存" name="save" style="float: right;"  class="input_button input_primary"/>
 </div>
 </form>
-<script src="//cdn.staticfile.org/jquery/3.6.1/jquery.min.js"></script>
-<script src="//cdn.staticfile.org/layer/3.1.1/layer.js"></script>
-<script src="//cdn.staticfile.org/ace/1.28.0/ace.js"></script>
-<script src="//cdn.staticfile.org/ace/1.28.0/ext-language_tools.js"></script>
-<script src="//cdn.staticfile.org/ace/1.28.0/ext-modelist.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/layer/3.1.1/layer.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/ace/1.28.0/ace.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/ace/1.28.0/ext-language_tools.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/ace/1.28.0/ext-modelist.js"></script>
 <script type="text/javascript">
 ace.require("ace/ext/language_tools");
 editor = ace.edit("file_content");
