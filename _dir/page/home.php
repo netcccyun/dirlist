@@ -4,7 +4,7 @@ header('Content-Type: text/html; charset=UTF-8');
 
 include PAGE_ROOT.'header.php';
 ?>
-<link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/aplayer/1.10.1/APlayer.min.css"/>
+<link rel="stylesheet" href="<?php echo $cdnpublic?>aplayer/1.10.1/APlayer.min.css"/>
 <style>
 	.btn-2 { padding:4px 10px;font-size:small; }
 	.footer-action li { margin-bottom:0.5rem; }
@@ -239,7 +239,7 @@ var audio_list = <?php echo json_encode($r['audio_list']);?>;
 var aplayer;
 </script>
 <?php include PAGE_ROOT.'footer.php';?>
-<script src="https://s4.zstatic.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script>
+<script src="<?php echo $cdnpublic?>aplayer/1.10.1/APlayer.min.js"></script>
 <script src="./_dir/static/js/main.js?v=<?php echo VERSION?>"></script>
 </body>
 </html>

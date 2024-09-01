@@ -17,9 +17,9 @@ function fix_footer(){
 fix_footer()
 </script>
 <?php }?>
-<script src="https://s4.zstatic.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-<script src="https://s4.zstatic.net/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
-<script src="https://s4.zstatic.net/ajax/libs/twitter-bootstrap/4.6.1/js/bootstrap.min.js"></script>
-<script src="https://s4.zstatic.net/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
-<script src="https://s4.zstatic.net/ajax/libs/layer/3.1.1/layer.js"></script>
+<script src="<?php echo $cdnpublic?>jquery/3.6.4/jquery.min.js"></script>
+<script src="<?php echo $cdnpublic?>popper.js/1.16.1/umd/popper.min.js"></script>
+<script src="<?php echo $cdnpublic?>twitter-bootstrap/4.6.1/js/bootstrap.min.js"></script>
+<script src="<?php echo $cdnpublic?>jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+<script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script src="./_dir/static/js/clipBoard.min.js"></script>

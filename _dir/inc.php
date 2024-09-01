@@ -26,6 +26,8 @@ $scriptpath=str_replace('\\','/',$_SERVER['SCRIPT_NAME']);
 $sitepath = substr($scriptpath, 0, strrpos($scriptpath, '/'));
 $siteurl = (is_https() ? 'https://' : 'http://').$_SERVER['HTTP_HOST'].$sitepath.'/';
 
+$cdnpublic = 'https://s4.zstatic.net/ajax/libs/';
+
 if(isset($_COOKIE["admin_session"]))
 {
 	if($conf['admin_session']===$_COOKIE["admin_session"]) {

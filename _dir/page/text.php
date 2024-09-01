@@ -22,7 +22,7 @@ header('Content-Type: text/html; charset=UTF-8');
 <head>
     <meta charset="utf-8" />
     <title>文本查看器</title>
-    <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
+    <link rel="stylesheet" href="<?php echo $cdnpublic?>highlight.js/11.6.0/styles/github.min.css">
     <style type="text/css" media="screen">
         code{
             font-family:  Arial,sans-serif;
@@ -36,7 +36,7 @@ header('Content-Type: text/html; charset=UTF-8');
 <body>
 <pre><code id="viewhtml"><?php echo $content; ?>
 </code></pre>
-<script src="https://s4.zstatic.net/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+<script src="<?php echo $cdnpublic?>highlight.js/11.6.0/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
 </body>
 </html>
