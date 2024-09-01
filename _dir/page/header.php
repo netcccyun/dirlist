@@ -46,8 +46,8 @@ foreach($navs as $nav){
 				</li>
 			</ul>
 
-			<form class="form-inline my-2 my-lg-0" action="./" method="GET">
-				<input type="text" name="c" required lay-verify="required" autocomplete="off" value = "search" style = "display: none;">
+			<form class="form-inline my-2 my-lg-0 d-none d-lg-flex" action="./" method="GET">
+				<input type="hidden" name="c" value="search">
 				<input name="s" class="form-control mr-sm-2" type="search" placeholder="请输入搜索关键字" aria-label="Search" value="">
 				<button class="btn btn-outline-primary my-2 my-sm-0" type="submit">	<i class="fa fa-search" aria-hidden="true"></i> 搜索</button>
 			</form>

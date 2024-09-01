@@ -4,6 +4,7 @@ header('Content-Type: text/html; charset=UTF-8');
 
 include PAGE_ROOT.'header.php';
 ?>
+<link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/aplayer/1.10.1/APlayer.min.css"/>
 <style>
 	.btn-2 { padding:4px 10px;font-size:small; }
 	.footer-action li { margin-bottom:0.5rem; }
@@ -31,8 +32,17 @@ if($conf['announce']){?>
 		<i class="fa fa-volume-up mr-2"></i><?php echo $conf['announce']?>
 	</div>
 <?php
-}
-
+}?>
+<form class="form d-block d-lg-none" action="./" method="GET">
+	<input type="hidden" name="c" value="search">
+	<div class="input-group mb-3">
+	<input name="s" class="form-control mr-sm-2" type="search" placeholder="请输入搜索关键字" aria-label="Search" value="">
+	<div class="input-group-append">
+		<button class="btn btn-outline-primary" type="submit"><i class="fa fa-search" aria-hidden="true"></i> 搜索</button>
+	</div>
+	</div>
+</form>
+<?php
 if($c=='search'){?>
 				<p>
 					<b><?php echo $s?></b> 的搜索结果 (<?php echo count($r['list']);?>)
@@ -97,7 +107,7 @@ if(!$islogin && !empty($r['passwd']) && (!isset($_COOKIE['dir_passwd']) || $_COO
 					</td><?php }?>
 					<th>文件名</th>
 					<th class="d-none d-lg-table-cell"></th>
-					<th class="d-none d-md-table-cell">修改时间</th>
+					<th class="d-none d-lg-table-cell">修改时间</th>
 					<th>大小</th>
 					<th class="d-none d-md-table-cell">操作</th>
 					</tr>
@@ -126,8 +136,15 @@ foreach($r['list'] as $item) {
 								<label class="custom-control-label" for="<?php echo $item['name']; ?>"></label>
 							</div>
                         </td><?php }?>
-						<td>
+						<td class="d-none d-md-table-cell">
 							<a class="fname" href="<?php echo $item['src']?>" title="<?php echo $c=='search'?'/'.$item['path']:$item['name']?>"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
+						</td>
+						<td class="d-table-cell d-md-none">
+							<?php if($item['type'] == 'file'){ ?>
+								<a class="fname on-tiny-view" href="javascript:" onclick="tinyview(this)"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
+							<?php }else{ ?>
+								<a class="fname" href="<?php echo $item['src']?>"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
+							<?php } ?>
 						</td>
 						<td class="d-none d-lg-table-cell fileinfo">
 						<?php if($item['type'] == 'file'){ ?>
@@ -135,14 +152,14 @@ foreach($r['list'] as $item) {
 							<a href="javascript:;" onclick="qrcode('<?php echo $item['src']; ?>')" title="显示二维码"><i class="fa fa-qrcode" aria-hidden="true"></i></a>
 						<?php } ?>
 						</td>
-						<td class="d-none d-md-table-cell"><?php echo $item['mtime']; ?></td>
+						<td class="d-none d-lg-table-cell"><?php echo $item['mtime']; ?></td>
 						<td><?php echo $item['size_format']; ?></td>
 						<td class="d-none d-md-table-cell">
 							<?php if($item['type'] == 'file'){ ?>
 								<a href="javascript:;" class="btn btn-sm btn-outline-secondary" title="复制链接" onclick="copy('<?php echo $item['src']; ?>')"><i class="fa fa-link fa-fw"></i></a>
 								<a href="<?php echo $item['src']; ?>" class="btn btn-sm btn-outline-primary" title="点击下载"><i class="fa fa-download fa-fw"></i></a>
 								<?php if($item['view_type'] == 'image'){ ?><a class="btn btn-sm btn-outline-info" title="点此查看" href="javascript:;" onclick="view_image('<?php echo $item['src']; ?>')"><i class="fa fa-eye fa-fw"></i></a>
-								<?php }elseif($item['view_type'] == 'audio'){ ?><a class="btn btn-sm btn-outline-info" title="点此播放" href="javascript:;" onclick="view_audio('<?php echo $item['path']; ?>')"><i class="fa fa-play-circle fa-fw"></i></a>
+								<?php }elseif($item['view_type'] == 'audio'){ ?><a class="btn btn-sm btn-outline-info" title="点此播放" href="javascript:;" onclick="view_audio('<?php echo $item['src']; ?>')"><i class="fa fa-play-circle fa-fw"></i></a>
 								<?php }elseif($item['view_type'] == 'video'){ ?><a class="btn btn-sm btn-outline-info" title="点此播放" href="javascript:;" onclick="view_video('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-play-circle fa-fw"></i></a>
 								<?php }elseif($item['view_type'] == 'office'){ ?><a class="btn btn-sm btn-outline-info" title="点此查看" href="javascript:;" onclick="view_office('<?php echo $item['name']; ?>','<?php echo $item['src']; ?>')"><i class="fa fa-eye fa-fw"></i></a>
 								<?php }elseif($item['view_type'] == 'markdown'){ ?><a class="btn btn-sm btn-outline-info" title="点此查看" href="javascript:;" onclick="view_markdown('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-eye fa-fw"></i></a>
@@ -159,12 +176,37 @@ foreach($r['list'] as $item) {
 								<?php if($item['view_type'] == 'text'){?><a class="dropdown-item" href="javascript:;" onclick="admin_edit('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-code fa-fw"></i> 编辑</a><?php } ?>
 							</div><?php } ?>
 						</td>
+						<td class="d-none tiny-view" data-html="
+							<div class=&quot;mt-2 ellipsis&quot;><i class=&quot;fa <?php echo $item['icon']?> fa-fw&quot;></i> <?php echo $item['name']?></div>
+							<div class=&quot;mt-3 ellipsis text-muted&quot;><?php echo $item['size_format']; ?> · <?php echo $item['mtime']; ?></div>
+							<div class=&quot;mt-4&quot;>
+								<a href=&quot;javascript:;&quot; class=&quot;btn btn-sm btn-outline-secondary btn-2&quot; onclick=&quot;copy('<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-link fa-fw&quot;></i> 复制链接</a>
+								<a href=&quot;<?php echo $item['src']; ?>&quot; class=&quot;btn btn-sm btn-outline-primary btn-2&quot;><i class=&quot;fa fa-download fa-fw&quot;></i> 下载</a>
+								<?php if($item['view_type'] == 'image'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_image('<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
+								<?php }elseif($item['view_type'] == 'audio'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_audio('<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-play-circle fa-fw&quot;></i> 播放</a>
+								<?php }elseif($item['view_type'] == 'video'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_video('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-play-circle fa-fw&quot;></i> 播放</a>
+								<?php }elseif($item['view_type'] == 'office'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_office('<?php echo $item['name']; ?>','<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
+								<?php }elseif($item['view_type'] == 'markdown'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_markdown('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
+								<?php }elseif($item['view_type'] == 'text'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_text('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
+								<?php } ?>
+								<?php if($islogin){?><button type=&quot;button&quot; class=&quot;btn btn-sm btn-outline-danger btn-2 dropdown-toggle&quot; data-toggle=&quot;dropdown&quot; aria-expanded=&quot;false&quot; title=&quot;管理操作&quot;></button>
+								<div class=&quot;dropdown-menu&quot;>
+									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_delete('<?php echo $item['name']; ?>','<?php echo $item['type']; ?>')&quot;><i class=&quot;fa fa-trash fa-fw&quot;></i> 删除</a>
+									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_addclip('copy','<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-copy fa-fw&quot;></i> 复制</a>
+									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_addclip('cut','<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-cut fa-fw&quot;></i> 剪切</a>
+									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_rename('<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-pencil-square-o fa-fw&quot;></i> 重命名</a>
+									<?php if($item['ext'] == 'zip'){?><a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_uncompress('<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-file-zip-o fa-fw&quot;></i> 解压缩</a><?php } ?>
+									<?php if($item['view_type'] == 'text'){?><a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_edit('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-code fa-fw&quot;></i> 编辑</a><?php } ?>
+								</div><?php } ?>
+							</div>">
+						</td>
 					</tr>
 <?php
 }
 ?>
 				</tbody>
 			</table>
+<?php if($r['page'] > 0 && $r['pagenum'] > 0) echo generatePagination($r['page'], $r['pagenum']);?>
 		</div></div>
 <?php
 if($conf['readme_md'] == 1 && $r['readme_md']){
@@ -191,7 +233,13 @@ if($conf['readme_md'] == 1 && $r['readme_md']){
 }
 ?>
 	</div>
+<div id="aplayer"></div>
+<script>
+var audio_list = <?php echo json_encode($r['audio_list']);?>;
+var aplayer;
+</script>
 <?php include PAGE_ROOT.'footer.php';?>
+<script src="https://s4.zstatic.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script>
 <script src="./_dir/static/js/main.js?v=<?php echo VERSION?>"></script>
 </body>
 </html>

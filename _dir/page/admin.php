@@ -94,6 +94,10 @@ include PAGE_ROOT.'header.php';
 	  <div class="col-sm-9"><textarea class="form-control" name="nav" rows="3" placeholder=""><?php echo $conf['nav']?></textarea><font color="green">填写格式：链接文字*链接地址|链接文字*链接地址</font></div>
 	</div>
 	<div class="form-group row">
+	  <label class="col-sm-3 col-form-label">底部悬浮条</label>
+	  <div class="col-sm-9"><select class="form-control" name="footer_bar" default="<?php echo $conf['footer_bar']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
+	</div>
+	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">中文文件名编码</label>
 	  <div class="col-sm-9"><select class="form-control" name="name_encode" default="<?php echo $conf['name_encode']?>"><option value="utf8">UTF-8</option><option value="gbk">GBK</option></select><font color="green">当出现中文文件名乱码的情况下可以修改此项</font></div>
 	</div>
@@ -108,6 +112,10 @@ include PAGE_ROOT.'header.php';
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">文件索引缓存</label>
 	  <div class="col-sm-9"><select class="form-control" name="cache_indexes" default="<?php echo $conf['cache_indexes']?>"><option value="0">关闭</option><option value="1">缓存1小时</option><option value="2">缓存6小时</option><option value="3">缓存24小时</option></select><font color="green">文件和目录数量多的情况下建议开启，可提升搜索速度。开启后如文件有变动需手动清除缓存</font></div>
+	</div>
+	<div class="form-group row">
+	  <label class="col-sm-3 col-form-label">文件列表翻页</label>
+	  <div class="col-sm-9"><select class="form-control" name="page_size" default="<?php echo $conf['page_size']?>"><option value="0">关闭翻页功能</option><option value="30">每页显示30条</option><option value="50">每页显示50条</option><option value="100">每页显示100条</option><option value="200">每页显示200条</option><option value="300">每页显示300条</option></select></div>
 	</div>
 	<div class="form-group row">
 	  <div class="offset-sm-3 col-sm-9"><input type="submit" name="submit" value="修改" class="btn btn-primary form-control"/>

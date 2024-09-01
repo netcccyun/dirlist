@@ -218,3 +218,69 @@ function curl_download($url, $localpath, $timeout = 300)
 	fclose($fp);
 	return true;
 }
+
+function generatePagination($currentPage, $totalPages) {
+	$html = '<nav><ul class="pagination justify-content-center">';
+
+	$query = $_GET;
+	unset($query['page']);
+	$query = http_build_query($query).'&';
+    
+    // Previous page link
+    $html .= '<li class="page-item' . ($currentPage == 1 ? ' disabled' : '') . '">';
+    $html .= '<a class="page-link" href="' . ($currentPage > 1 ? '?'.$query.'page=' . ($currentPage - 1) : '#') . '" aria-label="Previous">';
+    $html .= '<span aria-hidden="true">&laquo;</span></a></li>';
+    
+    // Page number links
+    $pageNumbers = [];
+
+    if ($totalPages <= 7) {
+        // If total pages are 7 or less, show all pages
+        $pageNumbers = range(1, $totalPages);
+    } else {
+        if ($currentPage <= 4) {
+            // Show first 5 pages
+            $pageNumbers = range(1, 5);
+            $pageNumbers[] = '...';
+            $pageNumbers[] = $totalPages;
+        } elseif ($currentPage >= $totalPages - 3) {
+            // Show last 5 pages
+            $pageNumbers[] = 1;
+            $pageNumbers[] = '...';
+            $pageNumbers = array_merge($pageNumbers, range($totalPages - 4, $totalPages));
+        } else {
+            // Show current page with 1 before and 1 after
+            $pageNumbers[] = 1;
+            if ($currentPage > 3) {
+                $pageNumbers[] = '...';
+            }
+            $pageNumbers = array_merge($pageNumbers, range($currentPage - 1, $currentPage + 1));
+            if ($currentPage < $totalPages - 2) {
+                $pageNumbers[] = '...';
+            }
+            $pageNumbers[] = $totalPages;
+        }
+    }
+
+    // Generate HTML for page numbers
+    foreach ($pageNumbers as $page) {
+        if ($page === '...') {
+            $html .= '<li class="page-item disabled"><a class="page-link">...</a></li>';
+        } else {
+            if ($page == $currentPage) {
+                $html .= '<li class="page-item active"><span class="page-link">' . $page . '</span></li>';
+            } else {
+                $html .= '<li class="page-item"><a class="page-link" href="?'.$query.'page=' . $page . '">' . $page . '</a></li>';
+            }
+        }
+    }
+    
+    // Next page link
+    $html .= '<li class="page-item' . ($currentPage == $totalPages ? ' disabled' : '') . '">';
+    $html .= '<a class="page-link" href="' . ($currentPage < $totalPages ? '?'.$query.'page=' . ($currentPage + 1) : '#') . '" aria-label="Next">';
+    $html .= '<span aria-hidden="true">&raquo;</span></a></li>';
+    
+    $html .= '</ul></nav>';
+    
+    return $html;
+}

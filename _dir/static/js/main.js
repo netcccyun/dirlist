@@ -49,9 +49,9 @@ function filehash(path){
                 shadeClose: true,
   				area: ['400px', 'auto'],
 			  	content: '<b>md5: </b>' + data.md5 + '<br /><b>sha1: </b>' + data.sha1
-			});  
+			});
 		}else{
-			layer.alert(data.msg, {icon:7}); 
+			layer.alert(data.msg, {icon:7});
 		}
 	}, 'json');
 }
@@ -89,25 +89,53 @@ function view_image(src){
     img.src = resourcesUrl;
 }
 
-function view_audio(path){
-	var apiurl = './?c=audio&path=' + encodeURIComponent(path);
+function view_audio(src){
+    if(audio_list == null || audio_list.length == 0){
+        layer.msg('当前列表没有音频文件', {icon:2, time:1000});
+        return;
+    }
+    $.each(audio_list, function(key, item){
+        item.artist = 'artist';
+        item.cover = './_dir/static/images/music.png';
+    });
+    var index = audio_list.findIndex(item => item.url == src);
+    if(index == -1){
+        layer.msg('音频文件不存在', {icon:2, time:1000});
+        return;
+    }
+    layer.closeAll();
+    if(!aplayer){
+        aplayer = new APlayer({
+            container: document.getElementById('aplayer'),
+            fixed: true,
+            loop: 'none',
+            audio: audio_list
+        });
+    }
+    aplayer.setMode('normal');
+    aplayer.list.switch(index);
+    aplayer.play();
+	/*var apiurl = './?c=audio&path=' + encodeURIComponent(path);
 	layer.open({
         type: 2,
         shade: 0.6,
 		title:false,
-	  	area: ['60%', '88px'],
+	  	area: [$(window).width() > 768 ? '60%' : '95%', '88px'],
         shadeClose: true,
 	  	content: apiurl
-	});
+	});*/
 }
 
 function view_video(name, path){
+    if(aplayer && aplayer.audio && !aplayer.audio.paused){
+        aplayer.pause();
+    }
 	var apiurl = './?c=video&path=' + encodeURIComponent(path);
 	layer.open({
         type: 2,
         shade: 0.6,
 		title: '视频播放器 - ' + name,
-	  	area: ['68%', '78%'],
+	  	area: [$(window).width() > 768 ? '68%' : '95%', $(window).width() > 768 ? '78%' : '280px'],
         shadeClose: true,
 	  	content: apiurl
 	});
@@ -163,6 +191,19 @@ function submitpasswd(){
         }
     });
     return false;
+}
+
+function tinyview(obj){
+    var info = $(obj).parent().parent().find('.tiny-view').attr('data-html');
+    var html = '<div class="card" style="height: 100%;"><div class="card-body text-center">' + info + '</div></div>';
+    layer.open({
+        type: 1,
+        shade: 0.6,
+        title:false,
+        area: ['340px', '180px'],
+        shadeClose: true,
+        content: html
+    });
 }
 
 function change_checkboxes(e, t) { for (var n = e.length - 1; n >= 0; n--) e[n].checked = "boolean" == typeof t ? t : !e[n].checked }

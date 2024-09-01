@@ -12,7 +12,7 @@ header('Content-Type: text/html; charset=UTF-8');
 <body>
 <div id="aplayer"></div>
 <?php if($ext == 'm3u8'){?><script src="https://s4.zstatic.net/ajax/libs/hls.js/1.2.4/hls.min.js"></script><?php }?>
-<script src = "https://s4.zstatic.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script>
+<script src="https://s4.zstatic.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script>
 <script type="text/javascript">
     var ap = new APlayer({
         container: document.getElementById('aplayer'),

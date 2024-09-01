@@ -167,8 +167,13 @@ class DirList
 
     // 扫描所有文件
     private function scan_files($dir = '.'){
+        global $conf, $islogin;
         $list = [];
-        if(is_file($dir.'/.passwd') && filesize($dir.'/.passwd')>0) return $list;
+        if(is_file($dir.'/.passwd') && filesize($dir.'/.passwd')>0){
+            if(!($conf['cache_indexes'] == 0 && ($islogin || isset($_COOKIE['dir_passwd']) && $_COOKIE['dir_passwd']===md5(file_get_contents($dir.'/.passwd'))))){
+                return $list;
+            }
+        }
         $files = scandir($dir);
         foreach($files as $file){
             if($file == '.' || $file == '..') continue;
@@ -254,12 +259,14 @@ class DirList
     
     // 目录列表
     public function list_dir($dir = '.'){
+        global $conf;
         $dir = $this->set_dir_path($dir);
 
         $navi = $this->get_navigation($dir);
         
         $newdir = [];
         $newfile = [];
+        $audio_list = [];
 
         $readme_md = null;
 
@@ -312,10 +319,25 @@ class DirList
                     'view_type' => $view_type,
                     'ext' => $ext,
                 ];
+                if($view_type == 'audio'){
+                    $audio_list[] = [
+                        'name' => $name,
+                        'url' => $src,
+                    ];
+                }
                 if(($name == 'readme.md' || $name == 'README.md') && $size < 1024 * 1024 * 5) $readme_md = $relativePath;
             }
         }
         $listdir = array_merge($newdir, $newfile);
+
+        if($conf['page_size'] > 0){
+            $pagesize = intval($conf['page_size']);
+            $pagenum = ceil(count($listdir) / $pagesize);
+            if($pagenum > 1){
+                $page = isset($_GET['page'])?intval($_GET['page']):1;
+                $listdir = array_slice($listdir, ($page-1)*$pagesize, $pagesize);
+            }
+        }
 
         $parent = null;
         if($dir != '.'){
@@ -327,7 +349,7 @@ class DirList
         }
         $passwd = $this->get_passwd($dir);
 
-        $result = ['dir' => $dir, 'list' => $listdir, 'navi' => $navi, 'parent' => $parent, 'readme_md' => $readme_md, 'passwd' => $passwd];
+        $result = ['dir' => $dir, 'list' => $listdir, 'navi' => $navi, 'parent' => $parent, 'readme_md' => $readme_md, 'passwd' => $passwd, 'audio_list' => $audio_list, 'page' => $page, 'pagenum' => $pagenum];
         return $result;
     }
 

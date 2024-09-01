@@ -1,6 +1,7 @@
 <?php
 if(!defined('DIR_INIT'))exit();
 ?>
+<?php if($conf['footer_bar'] == 1){?>
 <footer class="footer card-footer mt-3" id="footer">
 <span> Copyright &copy;<?php echo date('Y')?> <?php echo $conf['title']?>  <?php echo $conf['footer']?></span>
 </footer>
@@ -15,6 +16,7 @@ function fix_footer(){
 }
 fix_footer()
 </script>
+<?php }?>
 <script src="https://s4.zstatic.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 <script src="https://s4.zstatic.net/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
 <script src="https://s4.zstatic.net/ajax/libs/twitter-bootstrap/4.6.1/js/bootstrap.min.js"></script>
