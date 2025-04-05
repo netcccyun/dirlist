@@ -3,6 +3,8 @@ if(!defined('DIR_INIT'))exit();
 header('Content-Type: text/html; charset=UTF-8');
 
 include PAGE_ROOT.'header.php';
+
+$download_ext = explode(',', $conf['download_ext']);
 ?>
 <link rel="stylesheet" href="<?php echo $cdnpublic?>aplayer/1.10.1/APlayer.min.css"/>
 <style>
@@ -128,6 +130,10 @@ if(!$islogin && !empty($r['passwd']) && (!isset($_COOKIE['dir_passwd']) || $_COO
 					</tr>
 <?php }
 foreach($r['list'] as $item) {
+	$download_url = $item['src'];
+	if($item['type'] == 'file' && in_array($item['ext'], $download_ext)){
+		$download_url .= '?download=true';
+	}
 ?>
 					<tr>
 						<?php if($islogin){?><td class="custom-checkbox-td">
@@ -136,14 +142,14 @@ foreach($r['list'] as $item) {
 								<label class="custom-control-label" for="<?php echo $item['name']; ?>"></label>
 							</div>
                         </td><?php }?>
-						<td class="d-none d-md-table-cell">
-							<a class="fname" href="<?php echo $item['src']?>" title="<?php echo $c=='search'?'/'.$item['path']:$item['name']?>"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
+						<td class="d-none <?php if(!$conf['tinyview']){?>d-md-table-cell<?php }?>">
+							<a class="fname" href="<?php echo $download_url?>" title="<?php echo $c=='search'?'/'.$item['path']:$item['name']?>"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
 						</td>
-						<td class="d-table-cell d-md-none">
+						<td class="d-table-cell <?php if(!$conf['tinyview']){?>d-md-none<?php }?>">
 							<?php if($item['type'] == 'file'){ ?>
-								<a class="fname on-tiny-view" href="javascript:" onclick="tinyview(this)"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
+								<a class="fname on-tiny-view" href="javascript:" onclick="tinyview(this)" title="<?php echo $c=='search'?'/'.$item['path']:$item['name']?>"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
 							<?php }else{ ?>
-								<a class="fname" href="<?php echo $item['src']?>"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
+								<a class="fname" href="<?php echo $item['src']?>" title="<?php echo $c=='search'?'/'.$item['path']:$item['name']?>"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $c=='search'?'/'.$item['path']:$item['name']?></a>
 							<?php } ?>
 						</td>
 						<td class="d-none d-lg-table-cell fileinfo">
@@ -157,7 +163,7 @@ foreach($r['list'] as $item) {
 						<td class="d-none d-md-table-cell">
 							<?php if($item['type'] == 'file'){ ?>
 								<a href="javascript:;" class="btn btn-sm btn-outline-secondary" title="复制链接" onclick="copy('<?php echo $item['src']; ?>')"><i class="fa fa-link fa-fw"></i></a>
-								<a href="<?php echo $item['src']; ?>" class="btn btn-sm btn-outline-primary" title="点击下载"><i class="fa fa-download fa-fw"></i></a>
+								<a href="<?php echo $download_url; ?>" class="btn btn-sm btn-outline-primary" title="点击下载"><i class="fa fa-download fa-fw"></i></a>
 								<?php if($item['view_type'] == 'image'){ ?><a class="btn btn-sm btn-outline-info" title="点此查看" href="javascript:;" onclick="view_image('<?php echo $item['src']; ?>')"><i class="fa fa-eye fa-fw"></i></a>
 								<?php }elseif($item['view_type'] == 'audio'){ ?><a class="btn btn-sm btn-outline-info" title="点此播放" href="javascript:;" onclick="view_audio('<?php echo $item['src']; ?>')"><i class="fa fa-play-circle fa-fw"></i></a>
 								<?php }elseif($item['view_type'] == 'video'){ ?><a class="btn btn-sm btn-outline-info" title="点此播放" href="javascript:;" onclick="view_video('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-play-circle fa-fw"></i></a>
@@ -172,34 +178,34 @@ foreach($r['list'] as $item) {
 								<a class="dropdown-item" href="javascript:;" onclick="admin_addclip('copy','<?php echo $item['name']; ?>')"><i class="fa fa-copy fa-fw"></i> 复制</a>
 								<a class="dropdown-item" href="javascript:;" onclick="admin_addclip('cut','<?php echo $item['name']; ?>')"><i class="fa fa-cut fa-fw"></i> 剪切</a>
 								<a class="dropdown-item" href="javascript:;" onclick="admin_rename('<?php echo $item['name']; ?>')"><i class="fa fa-pencil-square-o fa-fw"></i> 重命名</a>
-								<?php if($item['ext'] == 'zip'){?><a class="dropdown-item" href="javascript:;" onclick="admin_uncompress('<?php echo $item['name']; ?>')"><i class="fa fa-file-zip-o fa-fw"></i> 解压缩</a><?php } ?>
-								<?php if($item['view_type'] == 'text'){?><a class="dropdown-item" href="javascript:;" onclick="admin_edit('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-code fa-fw"></i> 编辑</a><?php } ?>
+								<?php if($item['ext'] == 'zip' || $item['ext'] == 'gz' || $item['ext'] == 'tar' || $item['ext'] == 'bz2' || $item['ext'] == 'tgz'){?><a class="dropdown-item" href="javascript:;" onclick="admin_uncompress('<?php echo $item['name']; ?>')"><i class="fa fa-file-zip-o fa-fw"></i> 解压缩</a><?php } ?>
+								<?php if($item['view_type'] == 'text' || $item['view_type'] == 'markdown'){?><a class="dropdown-item" href="javascript:;" onclick="admin_edit('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-code fa-fw"></i> 编辑</a><?php } ?>
 							</div><?php } ?>
 						</td>
-						<td class="d-none tiny-view" data-html="
-							<div class=&quot;mt-2 ellipsis&quot;><i class=&quot;fa <?php echo $item['icon']?> fa-fw&quot;></i> <?php echo $item['name']?></div>
-							<div class=&quot;mt-3 ellipsis text-muted&quot;><?php echo $item['size_format']; ?> · <?php echo $item['mtime']; ?></div>
-							<div class=&quot;mt-4&quot;>
-								<a href=&quot;javascript:;&quot; class=&quot;btn btn-sm btn-outline-secondary btn-2&quot; onclick=&quot;copy('<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-link fa-fw&quot;></i> 复制链接</a>
-								<a href=&quot;<?php echo $item['src']; ?>&quot; class=&quot;btn btn-sm btn-outline-primary btn-2&quot;><i class=&quot;fa fa-download fa-fw&quot;></i> 下载</a>
-								<?php if($item['view_type'] == 'image'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_image('<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
-								<?php }elseif($item['view_type'] == 'audio'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_audio('<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-play-circle fa-fw&quot;></i> 播放</a>
-								<?php }elseif($item['view_type'] == 'video'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_video('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-play-circle fa-fw&quot;></i> 播放</a>
-								<?php }elseif($item['view_type'] == 'office'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_office('<?php echo $item['name']; ?>','<?php echo $item['src']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
-								<?php }elseif($item['view_type'] == 'markdown'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_markdown('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
-								<?php }elseif($item['view_type'] == 'text'){ ?><a class=&quot;btn btn-sm btn-outline-info btn-2&quot; href=&quot;javascript:;&quot; onclick=&quot;view_text('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-eye fa-fw&quot;></i> 查看</a>
+						<template>
+							<div class="mt-2 ellipsis"><i class="fa <?php echo $item['icon']?> fa-fw"></i> <?php echo $item['name']?></div>
+							<div class="mt-3 ellipsis text-muted"><?php echo $item['size_format']; ?> · <?php echo $item['mtime']; ?></div>
+							<div class="mt-4">
+								<a href="javascript:;" class="btn btn-sm btn-outline-secondary btn-2" onclick="copy('<?php echo $item['src']; ?>')"><i class="fa fa-link fa-fw"></i> 复制链接</a>
+								<a href="<?php echo $download_url; ?>" class="btn btn-sm btn-outline-primary btn-2"><i class="fa fa-download fa-fw"></i> 下载</a>
+								<?php if($item['view_type'] == 'image'){ ?><a class="btn btn-sm btn-outline-info btn-2" href="javascript:;" onclick="view_image('<?php echo $item['src']; ?>')"><i class="fa fa-eye fa-fw"></i> 查看</a>
+								<?php }elseif($item['view_type'] == 'audio'){ ?><a class="btn btn-sm btn-outline-info btn-2" href="javascript:;" onclick="view_audio('<?php echo $item['src']; ?>')"><i class="fa fa-play-circle fa-fw"></i> 播放</a>
+								<?php }elseif($item['view_type'] == 'video'){ ?><a class="btn btn-sm btn-outline-info btn-2" href="javascript:;" onclick="view_video('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-play-circle fa-fw"></i> 播放</a>
+								<?php }elseif($item['view_type'] == 'office'){ ?><a class="btn btn-sm btn-outline-info btn-2" href="javascript:;" onclick="view_office('<?php echo $item['name']; ?>','<?php echo $item['src']; ?>')"><i class="fa fa-eye fa-fw"></i> 查看</a>
+								<?php }elseif($item['view_type'] == 'markdown'){ ?><a class="btn btn-sm btn-outline-info btn-2" href="javascript:;" onclick="view_markdown('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-eye fa-fw"></i> 查看</a>
+								<?php }elseif($item['view_type'] == 'text'){ ?><a class="btn btn-sm btn-outline-info btn-2" href="javascript:;" onclick="view_text('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-eye fa-fw"></i> 查看</a>
 								<?php } ?>
-								<?php if($islogin){?><button type=&quot;button&quot; class=&quot;btn btn-sm btn-outline-danger btn-2 dropdown-toggle&quot; data-toggle=&quot;dropdown&quot; aria-expanded=&quot;false&quot; title=&quot;管理操作&quot;></button>
-								<div class=&quot;dropdown-menu&quot;>
-									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_delete('<?php echo $item['name']; ?>','<?php echo $item['type']; ?>')&quot;><i class=&quot;fa fa-trash fa-fw&quot;></i> 删除</a>
-									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_addclip('copy','<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-copy fa-fw&quot;></i> 复制</a>
-									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_addclip('cut','<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-cut fa-fw&quot;></i> 剪切</a>
-									<a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_rename('<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-pencil-square-o fa-fw&quot;></i> 重命名</a>
-									<?php if($item['ext'] == 'zip'){?><a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_uncompress('<?php echo $item['name']; ?>')&quot;><i class=&quot;fa fa-file-zip-o fa-fw&quot;></i> 解压缩</a><?php } ?>
-									<?php if($item['view_type'] == 'text'){?><a class=&quot;dropdown-item&quot; href=&quot;javascript:;&quot; onclick=&quot;admin_edit('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')&quot;><i class=&quot;fa fa-code fa-fw&quot;></i> 编辑</a><?php } ?>
+								<?php if($islogin){?><button type="button" class="btn btn-sm btn-outline-danger btn-2 dropdown-toggle" data-toggle="dropdown" aria-expanded="false" title="管理操作"></button>
+								<div class="dropdown-menu">
+									<a class="dropdown-item" href="javascript:;" onclick="admin_delete('<?php echo $item['name']; ?>','<?php echo $item['type']; ?>')"><i class="fa fa-trash fa-fw"></i> 删除</a>
+									<a class="dropdown-item" href="javascript:;" onclick="admin_addclip('copy','<?php echo $item['name']; ?>')"><i class="fa fa-copy fa-fw"></i> 复制</a>
+									<a class="dropdown-item" href="javascript:;" onclick="admin_addclip('cut','<?php echo $item['name']; ?>')"><i class="fa fa-cut fa-fw"></i> 剪切</a>
+									<a class="dropdown-item" href="javascript:;" onclick="admin_rename('<?php echo $item['name']; ?>')"><i class="fa fa-pencil-square-o fa-fw"></i> 重命名</a>
+									<?php if($item['ext'] == 'zip' || $item['ext'] == 'gz' || $item['ext'] == 'tar' || $item['ext'] == 'bz2' || $item['ext'] == 'tgz'){?><a class="dropdown-item" href="javascript:;" onclick="admin_uncompress('<?php echo $item['name']; ?>')"><i class="fa fa-file-zip-o fa-fw"></i> 解压缩</a><?php } ?>
+									<?php if($item['view_type'] == 'text' || $item['view_type'] == 'markdown'){?><a class="dropdown-item" href="javascript:;" onclick="admin_edit('<?php echo $item['name']; ?>','<?php echo $item['path']; ?>')"><i class="fa fa-code fa-fw"></i> 编辑</a><?php } ?>
 								</div><?php } ?>
-							</div>">
-						</td>
+							</div>
+						</template>
 					</tr>
 <?php
 }

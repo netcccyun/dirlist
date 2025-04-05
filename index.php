@@ -107,7 +107,11 @@ switch($c){
             $errmsg = $e->getMessage();
             sysmsg($errmsg);
         }
-        include PAGE_ROOT.'editor.php';
+        if($conf['editor'] == '1'){
+            include PAGE_ROOT.'editor2.php';
+        }else{
+            include PAGE_ROOT.'editor.php';
+        }
         break;
     case 'login':
         include PAGE_ROOT.'login.php';

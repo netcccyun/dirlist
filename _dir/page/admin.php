@@ -49,6 +49,32 @@ header('Content-Type: text/html; charset=UTF-8');
 include PAGE_ROOT.'header.php';
 ?>
 
+<div class="modal fade" align="left" id="rewrite" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+	  <h5 class="modal-title">伪静态配置说明</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+只支持Nginx，伪静态规则如下：<br/><br/>
+<pre>
+location ~* /([^/]+\.[^/]+)$ {
+  set $filename $1;
+  if ($arg_download = "true") {
+    add_header Content-Disposition "attachment; filename=\"$filename\"";
+  }
+}
+</pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 	<div class="container" id="main">
 		<div class="row mt-3">
@@ -108,6 +134,18 @@ include PAGE_ROOT.'header.php';
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">开启README.md显示</label>
 	  <div class="col-sm-9"><select class="form-control" name="readme_md" default="<?php echo $conf['readme_md']?>"><option value="0">关闭</option><option value="1">开启</option></select></div>
+	</div>
+	<div class="form-group row">
+	  <label class="col-sm-3 col-form-label">PC点击文件名动作</label>
+	  <div class="col-sm-9"><select class="form-control" name="tinyview" default="<?php echo $conf['tinyview']?>"><option value="0">跳转文件下载链接（默认）</option><option value="1">打开文件操作窗口</option></select></div>
+	</div>
+	<div class="form-group row">
+	  <label class="col-sm-3 col-form-label">强制改为下载的文件扩展名</label>
+	  <div class="col-sm-9"><input type="text" name="download_ext" value="<?php echo $conf['download_ext']; ?>" class="form-control" placeholder="多个后缀名用,隔开"/><font color="green">在这里填写扩展名后，可解决图片、视频等文件，点击下载会直接在浏览器中预览的问题。需要先<a href="#" data-toggle="modal" data-target="#rewrite">配置伪静态</a></font></div>
+	</div>
+	<div class="form-group row">
+	  <label class="col-sm-3 col-form-label">文本编辑器选择</label>
+	  <div class="col-sm-9"><select class="form-control" name="editor" default="<?php echo $conf['editor']?>"><option value="0">ACE Editor</option><option value="1">Monaco Editor（VSCode）</option></select></div>
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">文件索引缓存</label>

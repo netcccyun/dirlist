@@ -1,10 +1,6 @@
 #file_content {
-	color:#3E3E3E;
 	border-top: 1px solid #c9c6c6;
     border-bottom: 1px solid #c9c6c6;
-	overflow-y: scroll;
-	outline: none;
-	font-size:12px;
 	height:500px;
 	width:100%;
 }

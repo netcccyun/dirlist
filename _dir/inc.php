@@ -4,7 +4,7 @@ define("DIR_INIT", true);
 define("SYSTEM_ROOT", dirname(__FILE__).'/');
 define("ROOT", dirname(SYSTEM_ROOT).'/');
 define("PAGE_ROOT", SYSTEM_ROOT.'page/');
-define("VERSION", '1.5');
+define("VERSION", '1.6');
 
 date_default_timezone_set("PRC");
 

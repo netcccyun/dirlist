@@ -14,85 +14,88 @@ class DirList
             'robots.txt',
         ],
     ];
-    
+
     // 获取文件后缀名
-    public function get_file_ext($filepath){
-        $suffix = explode(".",$filepath);
+    public function get_file_ext($filepath)
+    {
+        $suffix = explode(".", $filepath);
         $suffix = end($suffix);
         $suffix = strtolower($suffix);
         return $suffix;
     }
-    
+
     // 获取文件预览类型
-    public function get_view_type($type){
-        $type_image = ['png','jpg','jpeg','gif','bmp','webp','ico','svg','svgz','tif','tiff','heic','exif'];
-        $type_audio = ['mp3','wav','ogg','m4a','flac','aac'];
-        $type_video = ['mp4','webm','flv','f4v','mov','3gp','3gpp','avi','wmv','mkv','ts','dat','asf','mts','m2ts','m3u8', 'm4v'];
-        $type_office = ['doc','docx','xps','rtf','wps','xls','xlsx','ppt','pptx'];
+    public function get_view_type($type)
+    {
+        $type_image = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'ico', 'svg', 'svgz', 'tif', 'tiff', 'heic', 'exif'];
+        $type_audio = ['mp3', 'wav', 'ogg', 'm4a', 'flac', 'aac'];
+        $type_video = ['mp4', 'webm', 'flv', 'f4v', 'mov', '3gp', '3gpp', 'avi', 'wmv', 'mkv', 'ts', 'dat', 'asf', 'mts', 'm2ts', 'm3u8', 'm4v'];
+        $type_office = ['doc', 'docx', 'xps', 'rtf', 'wps', 'xls', 'xlsx', 'ppt', 'pptx'];
         $type_markdown = ['md'];
-        $type_text = ['txt','text','log','yaml','yml','conf','config','ini','c','cpp','cxx','rc','php','py','cs','h','htm','html','css','less','sass','scss','js','hdml','dtd','wml','xml','xsl','vbs','vb','rtx','xsd','dpr','sql','java','go','jsp','asp','aspx','asa','asax','pl','bat','cmd','rb','reg','sh','json','lua','r','m','mm','mak','swift','tpl','vue','go'];
-        if(in_array($type, $type_image)){
+        $type_text = ['txt', 'text', 'log', 'yaml', 'yml', 'conf', 'config', 'ini', 'c', 'cpp', 'cxx', 'rc', 'php', 'py', 'cs', 'h', 'htm', 'html', 'css', 'less', 'sass', 'scss', 'js', 'hdml', 'dtd', 'wml', 'xml', 'xsl', 'vbs', 'vb', 'rtx', 'xsd', 'dpr', 'sql', 'java', 'go', 'jsp', 'asp', 'aspx', 'asa', 'asax', 'pl', 'bat', 'cmd', 'rb', 'reg', 'sh', 'json', 'lua', 'r', 'm', 'mm', 'mak', 'swift', 'tpl', 'vue', 'rs'];
+        if (in_array($type, $type_image)) {
             return 'image';
-        }elseif(in_array($type, $type_audio)){
+        } elseif (in_array($type, $type_audio)) {
             return 'audio';
-        }elseif(in_array($type, $type_video)){
+        } elseif (in_array($type, $type_video)) {
             return 'video';
-        }elseif(in_array($type, $type_office)){
+        } elseif (in_array($type, $type_office)) {
             return 'office';
-        }elseif(in_array($type, $type_markdown)){
+        } elseif (in_array($type, $type_markdown)) {
             return 'markdown';
-        }elseif(in_array($type, $type_text)){
+        } elseif (in_array($type, $type_text)) {
             return 'text';
-        }else{
+        } else {
             return '';
         }
     }
-    
+
     // 获取文件小图标
-    public function get_file_icon($type){
-        $type_image = ['png','jpg','jpeg','gif','bmp','webp','ico','svg','svgz','tif','tiff','heic','psd','exif','pcx','tga','fpx','cdr','pcd','eps','ai','wmf','raw','ufo','jpc','jp2','jpx','xbm','wbmp','avif'];
-        $type_audio = ['mp3','wav','wma','ogg','m4a','flac','ape','aac','ra','cda','midi','mid','aif','au','voc'];
-        $type_video = ['mp4','webm','flv','f4v','mov','3gp','3gpp','avi','mpg','mpeg','wmv','mkv','ts','dat','asf','rm','rmvb','ram','divx','vob','qt','fli','flc','mod','m2t','swf','mts','m2ts','mpe','div','lavf','m3u8','m4v','ogm','ogv'];
-        $type_text = ['txt','text','log','md','yaml','yml','conf','config','ini'];
-        $type_code = ['c','cpp','cxx','rc','php','py','cs','h','htm','html','css','less','sass','scss','js','hdml','dtd','wml','xml','xsl','vbs','vb','rtx','xsd','dpr','sql','java','go','jsp','asp','aspx','asa','asax','pl','bat','cmd','rb','reg','sh','json','lua','r','m','mm','mak','swift','tpl','vue','go'];
-        $type_archive = ['zip','7z','rar','tgz','gz','xz','tar','jar','iso','z','zipx','cab','bz2','arj','lz','lzh'];
-        $type_word = ['doc','docx','xps','rtf','wps','odt'];
-        $type_excel = ['xls','xlsx','ods'];
-        $type_pdf = ['pdf'];
-        $type_powerpoint = ['ppt','pptx'];
-        $type_android = ['apk'];
-        $type_apple = ['ipa','dmg'];
-        $type_windows = ['exe','appx','msi'];
-        $type_linux = ['deb','rpm'];
-        if(in_array($type, $type_image)){
+    public function get_file_icon($type)
+    {
+        $type_image = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'ico', 'svg', 'svgz', 'tif', 'tiff', 'heic', 'psd', 'exif', 'pcx', 'tga', 'fpx', 'cdr', 'pcd', 'eps', 'ai', 'wmf', 'raw', 'ufo', 'jpc', 'jp2', 'jpx', 'xbm', 'wbmp', 'avif', 'heif'];
+        $type_audio = ['mp3', 'wav', 'wma', 'ogg', 'm4a', 'flac', 'ape', 'aac', 'ra', 'cda', 'midi', 'mid', 'aif', 'au', 'voc'];
+        $type_video = ['mp4', 'webm', 'flv', 'f4v', 'mov', '3gp', '3gpp', 'avi', 'mpg', 'mpeg', 'wmv', 'mkv', 'ts', 'dat', 'asf', 'rm', 'rmvb', 'ram', 'divx', 'vob', 'qt', 'fli', 'flc', 'mod', 'm2t', 'swf', 'mts', 'm2ts', 'mpe', 'div', 'lavf', 'm3u8', 'm4v', 'ogm', 'ogv', 'ogx', 'drc', 'dts', 'eac3', 'mka', 'mks', 'mpv', 'mp4v', 'mp2v', 'mp2t', 'mxf'];
+        $type_text = ['txt', 'text', 'log', 'md', 'yaml', 'yml', 'conf', 'config', 'ini'];
+        $type_code = ['c', 'cpp', 'cxx', 'rc', 'php', 'py', 'cs', 'h', 'htm', 'html', 'css', 'less', 'sass', 'scss', 'js', 'hdml', 'dtd', 'wml', 'xml', 'xsl', 'vbs', 'vb', 'rtx', 'xsd', 'dpr', 'sql', 'java', 'go', 'jsp', 'asp', 'aspx', 'asa', 'asax', 'pl', 'bat', 'cmd', 'rb', 'reg', 'sh', 'json', 'lua', 'r', 'm', 'mm', 'mak', 'swift', 'tpl', 'vue', 'rs'];
+        $type_archive = ['zip', '7z', 'rar', 'tgz', 'gz', 'xz', 'tar', 'jar', 'iso', 'z', 'zipx', 'cab', 'bz2', 'arj', 'lz', 'lzh'];
+        $type_word = ['doc', 'docx', 'xps', 'rtf', 'wps', 'odt', 'dot', 'dotx', 'dotm', 'docm', 'docb'];
+        $type_excel = ['xls', 'xlsx', 'ods', 'csv', 'xlsm', 'xlsb', 'xltx', 'xltm', 'xlt'];
+        $type_pdf = ['pdf', 'epub'];
+        $type_powerpoint = ['ppt', 'pptx', 'pps', 'ppsx', 'pot', 'potx', 'potm', 'pptm', 'ppsm'];
+        $type_android = ['apk', 'aab', 'obb', 'xapk'];
+        $type_apple = ['ipa', 'dmg'];
+        $type_windows = ['exe', 'appx', 'msi'];
+        $type_linux = ['deb', 'rpm'];
+        if (in_array($type, $type_image)) {
             return 'fa-file-image-o';
-        }elseif(in_array($type, $type_audio)){
+        } elseif (in_array($type, $type_audio)) {
             return 'fa-file-audio-o';
-        }elseif(in_array($type, $type_video)){
+        } elseif (in_array($type, $type_video)) {
             return 'fa-file-video-o';
-        }elseif(in_array($type, $type_text)){
+        } elseif (in_array($type, $type_text)) {
             return 'fa-file-text-o';
-        }elseif(in_array($type, $type_code)){
+        } elseif (in_array($type, $type_code)) {
             return 'fa-file-code-o';
-        }elseif(in_array($type, $type_archive)){
+        } elseif (in_array($type, $type_archive)) {
             return 'fa-file-archive-o';
-        }elseif(in_array($type, $type_word)){
+        } elseif (in_array($type, $type_word)) {
             return 'fa-file-word-o';
-        }elseif(in_array($type, $type_excel)){
+        } elseif (in_array($type, $type_excel)) {
             return 'fa-file-excel-o';
-        }elseif(in_array($type, $type_pdf)){
+        } elseif (in_array($type, $type_pdf)) {
             return 'fa-file-pdf-o';
-        }elseif(in_array($type, $type_powerpoint)){
+        } elseif (in_array($type, $type_powerpoint)) {
             return 'fa-file-powerpoint-o';
-        }elseif(in_array($type, $type_android)){
+        } elseif (in_array($type, $type_android)) {
             return 'fa-android';
-        }elseif(in_array($type, $type_apple)){
+        } elseif (in_array($type, $type_apple)) {
             return 'fa-apple';
-        }elseif(in_array($type, $type_windows)){
+        } elseif (in_array($type, $type_windows)) {
             return 'fa-windows';
-        }elseif(in_array($type, $type_linux)){
+        } elseif (in_array($type, $type_linux)) {
             return 'fa-linux';
-        }else{
+        } else {
             return 'fa-file-o';
         }
     }
@@ -100,20 +103,20 @@ class DirList
     // 文件大小格式化
     private function size_format($size)
     {
-        if ($size<1024) {
-            $size.=' B';
+        if ($size < 1024) {
+            $size .= ' B';
         } else {
-            $size/=1024;
-            if ($size<1024) {
-                $size=round($size, 2).' KB';
+            $size /= 1024;
+            if ($size < 1024) {
+                $size = round($size, 2) . ' KB';
             } else {
-                $size/=1024;
-                if ($size<1024) {
-                    $size=round($size, 2).' MB';
+                $size /= 1024;
+                if ($size < 1024) {
+                    $size = round($size, 2) . ' MB';
                 } else {
-                    $size/=1024;
-                    if ($size<1024) {
-                        $size=round($size, 2).' GB';
+                    $size /= 1024;
+                    if ($size < 1024) {
+                        $size = round($size, 2) . ' GB';
                     }
                 }
             }
@@ -122,18 +125,19 @@ class DirList
     }
 
     // 检测路径
-    public function set_dir_path($dir, $is_file = false){
-        $dir = str_replace("\\","/",$dir);
-    
+    public function set_dir_path($dir, $is_file = false)
+    {
+        $dir = str_replace("\\", "/", $dir);
+
         while (strpos($dir, '//')) {
             $dir = str_replace('//', '/', $dir);
         }
-    
-        if(substr($dir, -1, 1) == '/') {
+
+        if (substr($dir, -1, 1) == '/') {
             $dir = substr($dir, 0, -1);
         }
 
-        if(substr($dir, 0, 1) == '/') {
+        if (substr($dir, 0, 1) == '/') {
             $dir = substr($dir, 1);
         }
 
@@ -141,8 +145,10 @@ class DirList
             return '.';
         }
 
-        if (strpos($dir, '<') !== false || strpos($dir, '>') !== false
-        || strpos($dir, '..') !== false || strpos($dir, '/./') !== false) {
+        if (
+            strpos($dir, '<') !== false || strpos($dir, '>') !== false
+            || strpos($dir, '..') !== false || strpos($dir, '/./') !== false
+        ) {
             throw new Exception('检测到无效的路径字符串');
         }
 
@@ -151,49 +157,50 @@ class DirList
         }
 
         $dir = $this->encoding($dir, false);
-    
-        if ($is_file){
-            if (!file_exists($dir) || !is_file($dir)){
+
+        if ($is_file) {
+            if (!file_exists($dir) || !is_file($dir)) {
                 throw new Exception('文件路径不存在');
             }
-        }else{
-            if (!file_exists($dir) || !is_dir($dir)){
+        } else {
+            if (!file_exists($dir) || !is_dir($dir)) {
                 throw new Exception('文件路径不存在');
             }
         }
-    
+
         return $dir;
     }
 
     // 扫描所有文件
-    private function scan_files($dir = '.'){
+    private function scan_files($dir = '.')
+    {
         global $conf, $islogin;
         $list = [];
-        if(is_file($dir.'/.passwd') && filesize($dir.'/.passwd')>0){
-            if(!($conf['cache_indexes'] == 0 && ($islogin || isset($_COOKIE['dir_passwd']) && $_COOKIE['dir_passwd']===md5(file_get_contents($dir.'/.passwd'))))){
+        if (is_file($dir . '/.passwd') && filesize($dir . '/.passwd') > 0) {
+            if (!($conf['cache_indexes'] == 0 && ($islogin || isset($_COOKIE['dir_passwd']) && $_COOKIE['dir_passwd'] === md5(file_get_contents($dir . '/.passwd'))))) {
                 return $list;
             }
         }
         $files = scandir($dir);
-        foreach($files as $file){
-            if($file == '.' || $file == '..') continue;
+        foreach ($files as $file) {
+            if ($file == '.' || $file == '..') continue;
 
             $relativePath = $dir . '/' . $file;
             if (substr($relativePath, 0, 2) == './') {
                 $relativePath = substr($relativePath, 2);
             }
 
-            if($this->is_hide($relativePath)) continue;
+            if ($this->is_hide($relativePath)) continue;
 
             $name = $this->encoding($file, true);
             $relativePathEncode = $this->encoding($relativePath, true);
 
             $ctime = filemtime($relativePath);
-            $ctime = date("Y-m-d H:i",$ctime);
+            $ctime = date("Y-m-d H:i", $ctime);
 
-            if(is_dir($relativePath)){
+            if (is_dir($relativePath)) {
                 $list = array_merge($list, $this->scan_files($relativePath));
-            }else{
+            } else {
                 $list[] = [
                     'name' => $name,
                     'path' => $relativePathEncode,
@@ -204,39 +211,49 @@ class DirList
     }
 
     // 获取所有文件
-    public function get_all_files(){
-        global $conf,$CACHE;
-        switch($conf['cache_indexes']){
-            case '1': $cache_time = 3600;break;
-            case '2': $cache_time = 3600 * 6;break;
-            case '3': $cache_time = 3600 * 24;break;
-            default: $cache_time = 0;break;
+    public function get_all_files()
+    {
+        global $conf, $CACHE;
+        switch ($conf['cache_indexes']) {
+            case '1':
+                $cache_time = 3600;
+                break;
+            case '2':
+                $cache_time = 3600 * 6;
+                break;
+            case '3':
+                $cache_time = 3600 * 24;
+                break;
+            default:
+                $cache_time = 0;
+                break;
         }
-        if($cache_time > 0){
+        if ($cache_time > 0) {
             $all_files = $CACHE->get('indexes');
-            if($all_files && count($all_files) > 0){
+            if ($all_files && count($all_files) > 0) {
                 return $all_files;
             }
         }
         $all_files = $this->scan_files();
-        if($cache_time > 0){
+        if ($cache_time > 0) {
             $CACHE->set('indexes', $all_files, $cache_time);
         }
         return $all_files;
     }
 
     // 文件搜索
-    public function search_files($s){
-        if(empty($s)) return [];
+    public function search_files($s)
+    {
+        if (empty($s)) return [];
         $list = [];
         $all_files = $this->get_all_files();
-        foreach($all_files as $file){
-            if(stripos($file['name'], $s)===false) continue;
+        foreach ($all_files as $file) {
+            if (stripos($file['name'], $s) === false) continue;
             $relativePathEncode = $file['path'];
             $relativePath = $this->encoding($file['path'], false);
             $ctime = filemtime($relativePath);
-            $ctime = date("Y-m-d H:i",$ctime);
-            $src = './'.implode('/', array_map('rawurlencode', explode('/', $relativePath)));
+            $ctime = date("Y-m-d H:i", $ctime);
+            $src = './' . implode('/', array_map('rawurlencode', explode('/', $relativePath)));
             $ext = $this->get_file_ext($relativePath);
             $icon = $this->get_file_icon($ext);
             $view_type = $this->get_view_type($ext);
@@ -252,18 +269,19 @@ class DirList
                 'size_format' => $this->size_format($size),
                 'view_type' => $view_type,
             ];
-            if(count($list) >= 100) break;
+            if (count($list) >= 100) break;
         }
         return $list;
     }
-    
+
     // 目录列表
-    public function list_dir($dir = '.'){
+    public function list_dir($dir = '.')
+    {
         global $conf;
         $dir = $this->set_dir_path($dir);
 
         $navi = $this->get_navigation($dir);
-        
+
         $newdir = [];
         $newfile = [];
         $audio_list = [];
@@ -271,24 +289,24 @@ class DirList
         $readme_md = null;
 
         $files = scandir($dir);
-        foreach($files as $file){
-            if($file == '.' || $file == '..') continue;
+        foreach ($files as $file) {
+            if ($file == '.' || $file == '..') continue;
 
             $relativePath = $dir . '/' . $file;
             if (substr($relativePath, 0, 2) == './') {
                 $relativePath = substr($relativePath, 2);
             }
 
-            if($this->is_hide($relativePath)) continue;
+            if ($this->is_hide($relativePath)) continue;
 
             $name = $this->encoding($file, true);
             $relativePathEncode = $this->encoding($relativePath, true);
 
             $ctime = filemtime($relativePath);
-            $ctime = date("Y-m-d H:i",$ctime);
+            $ctime = date("Y-m-d H:i", $ctime);
 
-            if(is_dir($relativePath)){
-                $src = './?dir='.rawurlencode('/'.$relativePathEncode);
+            if (is_dir($relativePath)) {
+                $src = './?dir=' . rawurlencode('/' . $relativePathEncode);
                 $newdir[] = [
                     'type' => 'dir',
                     'name' => $name,
@@ -301,8 +319,8 @@ class DirList
                     'view_type' => false,
                     'ext' => false,
                 ];
-            }else{
-                $src = './'.implode('/', array_map('rawurlencode', explode('/', $relativePath)));
+            } else {
+                $src = './' . implode('/', array_map('rawurlencode', explode('/', $relativePath)));
                 $ext = $this->get_file_ext($relativePath);
                 $icon = $this->get_file_icon($ext);
                 $view_type = $this->get_view_type($ext);
@@ -319,33 +337,33 @@ class DirList
                     'view_type' => $view_type,
                     'ext' => $ext,
                 ];
-                if($view_type == 'audio'){
+                if ($view_type == 'audio') {
                     $audio_list[] = [
                         'name' => $name,
                         'url' => $src,
                     ];
                 }
-                if(($name == 'readme.md' || $name == 'README.md') && $size < 1024 * 1024 * 5) $readme_md = $relativePath;
+                if (($name == 'readme.md' || $name == 'README.md') && $size < 1024 * 1024 * 5) $readme_md = $relativePath;
             }
         }
         $listdir = array_merge($newdir, $newfile);
 
-        if($conf['page_size'] > 0){
+        if ($conf['page_size'] > 0) {
             $pagesize = intval($conf['page_size']);
             $pagenum = ceil(count($listdir) / $pagesize);
-            if($pagenum > 1){
-                $page = isset($_GET['page'])?intval($_GET['page']):1;
-                $listdir = array_slice($listdir, ($page-1)*$pagesize, $pagesize);
+            if ($pagenum > 1) {
+                $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                $listdir = array_slice($listdir, ($page - 1) * $pagesize, $pagesize);
             }
         }
 
         $parent = null;
-        if($dir != '.'){
-            $pathArray = explode('/', '/'.$dir);
-            unset($pathArray[count($pathArray)-1]);
+        if ($dir != '.') {
+            $pathArray = explode('/', '/' . $dir);
+            unset($pathArray[count($pathArray) - 1]);
             $parentPath = implode('/', $pathArray);
-            if($parentPath == '') $parent = './';
-            else $parent = './?dir='.rawurlencode($this->encoding($parentPath, true));
+            if ($parentPath == '') $parent = './';
+            else $parent = './?dir=' . rawurlencode($this->encoding($parentPath, true));
         }
         $passwd = $this->get_passwd($dir);
 
@@ -354,15 +372,16 @@ class DirList
     }
 
     // 获取目录访问密码
-    private function get_passwd($dir){
-        if($dir!='.')$dir = './'.$dir;
+    private function get_passwd($dir)
+    {
+        if ($dir != '.') $dir = './' . $dir;
 
         $level = substr_count($dir, '/') + 1;
-        while($level > 0){
-            $file = $dir.'/.passwd';
-            if(is_file($file)){
+        while ($level > 0) {
+            $file = $dir . '/.passwd';
+            if (is_file($file)) {
                 $passwd = file_get_contents($file);
-                if($passwd){
+                if ($passwd) {
                     return $passwd;
                 }
             }
@@ -373,23 +392,25 @@ class DirList
     }
 
     // 获取导航栏
-    private function get_navigation($dir){
+    private function get_navigation($dir)
+    {
         $navi = [
-            ['name'=>'首页', 'src'=>'./']
+            ['name' => '首页', 'src' => './']
         ];
         $navi_arr = explode('/', $dir);
         $navi_src = '';
-        foreach($navi_arr as $name){
-            if($name == '.') continue;
+        foreach ($navi_arr as $name) {
+            if ($name == '.') continue;
             $name = $this->encoding($name, true);
             $navi_src .= '/' . rawurlencode($name);
-            $navi[] = ['name'=>$name, 'src'=>'./?dir='.$navi_src];
+            $navi[] = ['name' => $name, 'src' => './?dir=' . $navi_src];
         }
         return $navi;
     }
 
     // 文件是否隐藏
-    private function is_hide($filePath){
+    private function is_hide($filePath)
+    {
         $hidden_files = $this->config['hidden_files'];
         if ($this->config['hide_dot_files']) {
             $hidden_files = array_merge(
@@ -398,7 +419,7 @@ class DirList
             );
         }
 
-        foreach ( $hidden_files as $hiddenPath) {
+        foreach ($hidden_files as $hiddenPath) {
             if (fnmatch($hiddenPath, $filePath)) {
                 return true;
             }
@@ -407,12 +428,13 @@ class DirList
     }
 
     // 解决中文文件名编码问题
-    private function encoding($str, $type = false){
+    private function encoding($str, $type = false)
+    {
         global $conf;
-        if($conf['name_encode'] == 'gbk' && preg_match("/[\x7f-\xff]/", $str)){
-            if($type){
+        if ($conf['name_encode'] == 'gbk' && preg_match("/[\x7f-\xff]/", $str)) {
+            if ($type) {
                 return mb_convert_encoding($str, 'UTF-8', 'GBK');
-            }else{
+            } else {
                 return mb_convert_encoding($str, 'GBK', 'UTF-8');
             }
         }
@@ -420,13 +442,14 @@ class DirList
     }
 
     // 文件hash
-    public function get_file_hash($path){
+    public function get_file_hash($path)
+    {
         global $conf;
-        if(!$conf['file_hash'])throw new Exception('未开启该功能');
+        if (!$conf['file_hash']) throw new Exception('未开启该功能');
         $path = $this->set_dir_path($path, true);
         $name = basename($path);
         $md5 = md5_file($path);
         $sha1 = sha1_file($path);
-        return ['code'=>0, 'name'=>$name, 'md5'=>$md5, 'sha1'=>$sha1];
+        return ['code' => 0, 'name' => $name, 'md5' => $md5, 'sha1' => $sha1];
     }
 }

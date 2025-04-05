@@ -194,7 +194,7 @@ function submitpasswd(){
 }
 
 function tinyview(obj){
-    var info = $(obj).parent().parent().find('.tiny-view').attr('data-html');
+    var info = $(obj).parent().parent().find('template').html();
     var html = '<div class="card" style="height: 100%;"><div class="card-body text-center">' + info + '</div></div>';
     layer.open({
         type: 1,
@@ -283,6 +283,11 @@ function admin_create(){
 
 function admin_secret(){
     var dir = $("#dir").val();
+    var files = get_checked_values()
+    if(files.length > 0){
+        layer.alert('只支持设置当前目录的密码，请勿选中任何文件或文件夹', {icon:7});
+        return;
+    }
     var ii = layer.load();
     $.ajax({
         type : 'POST',
