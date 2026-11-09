@@ -18,8 +18,8 @@ header('Content-Type: text/html; charset=UTF-8');
         container: document.getElementById('aplayer'),
         loop: 'none',
         audio: [{
-            name: '<?php echo $name; ?>',
-            url: '<?php echo $url; ?>',
+            name: <?php echo json_encode($name, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_HEX_TAG); ?>,
+            url: <?php echo json_encode($url, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG); ?>,
             artist: 'none',
             cover: './_dir/static/images/music.png'
         }]

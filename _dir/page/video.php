@@ -18,7 +18,7 @@ header('Content-Type: text/html; charset=UTF-8');
     var dp = new DPlayer({
         container: document.getElementById('dplayer'),
         video: {
-            url: '<?php echo $url; ?>'
+            url: <?php echo json_encode($url, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG); ?>
         }
     });
     dp.on('loadedmetadata', function () {

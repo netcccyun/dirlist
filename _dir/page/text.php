@@ -9,12 +9,12 @@ if(filesize($path) > 1024 * 1024 * 10) sysmsg('文件超过10M无法查看');
 $content = file_get_contents($path);
 if($content===false) sysmsg('文件读取失败');
 
-$coding = mb_detect_encoding($content,"UTF-8,GBK,GB2312");
-if($coding != 'UTF-8'){
+$coding = mb_detect_encoding($content, ['UTF-8', 'GBK', 'BIG-5'], true);
+if($coding && $coding != 'UTF-8'){
     $content = mb_convert_encoding($content, 'UTF-8', $coding);
 }
 
-$content = htmlspecialchars($content);
+$content = htmlspecialchars($content, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
 header('Content-Type: text/html; charset=UTF-8');
 ?><!DOCTYPE html>

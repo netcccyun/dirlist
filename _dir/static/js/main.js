@@ -1,5 +1,16 @@
-var pageurl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+var pageurl = window.location.protocol + '//' + window.location.host + window.location.pathname.replace(/[^\/]*$/, '');
 var page_reload = false;
+
+function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, function(c){
+        return {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c];
+    });
+}
+
+$(document).ajaxError(function(){
+    layer.closeAll('loading');
+    layer.msg('服务器错误', {icon:2});
+});
 
 function copy(src){
     var url = pageurl + src.slice(2);
@@ -45,10 +56,10 @@ function filehash(path){
         layer.close(ii);
 		if(data.code == 0){
 			layer.open({
-  				title: data.name,
+  				title: escapeHtml(data.name),
                 shadeClose: true,
   				area: ['400px', 'auto'],
-			  	content: '<b>md5: </b>' + data.md5 + '<br /><b>sha1: </b>' + data.sha1
+			  	content: '<b>md5: </b>' + escapeHtml(data.md5) + '<br /><b>sha1: </b>' + escapeHtml(data.sha1)
 			});
 		}else{
 			layer.alert(data.msg, {icon:7});
@@ -74,7 +85,7 @@ function view_image(src){
         var imgHeight = img.height * rate; //获取图片高度
         var imgWidth = img.width * rate; //获取图片宽度
 
-        var imgHtml = "<img src='" + resourcesUrl + "' width='" + imgWidth + "px' height='" + imgHeight + "px'/>";
+        var imgHtml = '<img src="' + escapeHtml(resourcesUrl) + '" width="' + imgWidth + '" height="' + imgHeight + '"/>';
         //弹出层
         layer.open({
             type:1,
@@ -134,7 +145,7 @@ function view_video(name, path){
 	layer.open({
         type: 2,
         shade: 0.6,
-		title: '视频播放器 - ' + name,
+		title: '视频播放器 - ' + escapeHtml(name),
 	  	area: [$(window).width() > 768 ? '68%' : '95%', $(window).width() > 768 ? '78%' : '280px'],
         shadeClose: true,
 	  	content: apiurl
@@ -144,7 +155,7 @@ function view_video(name, path){
 function view_markdown(name, path){
 	var apiurl = './?c=markdown&path=' + encodeURIComponent(path);
 	layer.open({
-		title:'MarkDown查看器 - ' + name,
+		title:'MarkDown查看器 - ' + escapeHtml(name),
 	  	type: 2, 
 	  	area: ['100%', '100%'],
 	  	content: apiurl
@@ -154,7 +165,7 @@ function view_markdown(name, path){
 function view_text(name, path){
 	var apiurl = './?c=text&path=' + encodeURIComponent(path);
 	layer.open({
-		title:'文本查看器 - ' + name,
+		title:'文本查看器 - ' + escapeHtml(name),
 	  	type: 2, 
 	  	area: ['100%', '100%'],
 	  	content: apiurl
@@ -165,7 +176,7 @@ function view_office(name, src){
 	var url = pageurl + src.slice(2);
 	var apiurl = 'https://view.officeapps.live.com/op/view.aspx?src=' + encodeURIComponent(url);
 	layer.open({
-		title: name,
+		title: escapeHtml(name),
 	  	type: 2, 
 	  	area: ['100%', '100%'],
 	  	content: apiurl
@@ -207,7 +218,7 @@ function tinyview(obj){
 }
 
 function change_checkboxes(e, t) { for (var n = e.length - 1; n >= 0; n--) e[n].checked = "boolean" == typeof t ? t : !e[n].checked }
-function get_checkboxes() { for (var e = document.getElementsByName("file[]"), t = [], n = e.length - 1; n >= 0; n--) (e[n].type = "checkbox") && t.push(e[n]); return t }
+function get_checkboxes() { for (var e = document.getElementsByName("file[]"), t = [], n = e.length - 1; n >= 0; n--) (e[n].type === "checkbox") && t.push(e[n]); return t }
 function checkbox_toggle(obj) { change_checkboxes(get_checkboxes(), obj.checked) }
 function get_checked_values() {
     var chk_value = new Array();
@@ -323,7 +334,7 @@ function admin_secret(){
                     yes: function(){
                         var issecret = $("input[name='issecret']:checked").val();
                         var passwd = $("input[name='passwd']").val();
-                        if(issecret == '1' && passwd == ''){
+                        if(issecret == '1' && passwd == '' && !data.data.issecret){
                             $("input[name='passwd']").focus();
                             return;
                         }
@@ -356,7 +367,7 @@ function admin_rename(name){
     layer.open({
         area: ['360px'],
         title: '重命名',
-        content: '<div><input type="text" name="newname" value="'+name+'" class="form-control" placeholder="新的名称" autocomplete="off"></div>',
+        content: '<div><input type="text" name="newname" value="'+escapeHtml(name)+'" class="form-control" placeholder="新的名称" autocomplete="off"></div>',
         btn: ['确定', '取消'],
         yes: function(){
             var newname = $("input[name='newname']").val();
@@ -521,7 +532,7 @@ function admin_compress(){
     layer.open({
         area: ['360px'],
         title: '创建压缩包文件',
-        content: '<div><label>压缩包文件名：</label><br/><input type="text" name="zipname" value="'+name+'" class="form-control" placeholder="" autocomplete="off"></div>',
+        content: '<div><label>压缩包文件名：</label><br/><input type="text" name="zipname" value="'+escapeHtml(name)+'" class="form-control" placeholder="" autocomplete="off"></div>',
         btn: ['确定', '取消'],
         yes: function(){
             var zipname = $("input[name='zipname']").val();
@@ -555,7 +566,7 @@ function admin_uncompress(name){
     layer.open({
         area: ['360px'],
         title: '解压缩',
-        content: '<div><label>解压到：</label><br/><input type="text" name="targetdir" value="'+dir+'" class="form-control" placeholder="" autocomplete="off"></div>',
+        content: '<div><label>解压到：</label><br/><input type="text" name="targetdir" value="'+escapeHtml(dir)+'" class="form-control" placeholder="" autocomplete="off"></div>',
         btn: ['确定', '取消'],
         yes: function(){
             var targetdir = $("input[name='targetdir']").val();
@@ -585,7 +596,7 @@ function admin_uncompress(name){
 function admin_edit(name, path){
 	var apiurl = './?c=editor&path=' + encodeURIComponent(path);
 	layer.open({
-		title:'文本编辑器 - ' + name,
+		title:'文本编辑器 - ' + escapeHtml(name),
 	  	type: 2, 
 	  	area: ['100%', '100%'],
 	  	content: apiurl

@@ -3,6 +3,7 @@
 require './_dir/inc.php';
 
 $c = isset($_GET['c'])?trim($_GET['c']):'home';
+$errmsg = '';
 
 $x = new DirList();
 
@@ -30,7 +31,7 @@ switch($c){
             $errmsg = $e->getMessage();
             sysmsg($errmsg);
         }
-        $name = basename($path);
+        $name = $x->encoding(basename($path), true);
         $ext = $x->get_file_ext($path);
         $url = implode('/', array_map('rawurlencode', explode('/', $path)));
         include PAGE_ROOT.$c.'.php';
@@ -38,12 +39,14 @@ switch($c){
     case 'search':
         $s = isset($_GET['s'])?trim($_GET['s']):'';
         if($s == '') exit("<script language='javascript'>window.location.href='./';</script>");
+        $r = ['list'=>[], 'audio_list'=>[]];
         try{
             $r = $x->search_files($s);
         }catch(Exception $e){
             $errmsg = $e->getMessage();
         }
-        $s = htmlspecialchars($s);
+        $r += ['list'=>[], 'audio_list'=>[], 'parent'=>null, 'passwd'=>null, 'readme_md'=>null, 'page'=>0, 'pagenum'=>0];
+        $s = htmlspecialchars($s, ENT_QUOTES);
         include PAGE_ROOT.'home.php';
         break;
     case 'home':
@@ -52,12 +55,15 @@ switch($c){
             $r = $x->list_dir($dir);
         }catch(Exception $e){
             $errmsg = $e->getMessage();
+            if(isset($_POST['passwd'])){
+                echo_json(['code'=>-1, 'msg'=>$errmsg]);
+            }
             $r = $x->list_dir();
         }
         if(!empty($r['passwd']) && isset($_POST['passwd'])){
             if($errmsg) echo_json(['code'=>-1, 'msg'=>$errmsg]);
             if(password_verify($_POST['passwd'], $r['passwd'])){
-                setcookie('dir_passwd', md5($r['passwd']));
+                setcookie('dir_passwd', md5($r['passwd']), 0, '', '', false, true);
                 echo_json(['code'=>0]);
             }else{
                 echo_json(['code'=>-1, 'msg'=>'目录访问密码错误']);
@@ -81,6 +87,7 @@ switch($c){
         break;
     case 'filemgr':
         if(!$islogin) exit("<script language='javascript'>window.location.href='./?c=login';</script>");
+        if(!checkRefererHost()) echo_json(['code'=>-1, 'msg'=>'referer error']);
         $path = isset($_POST['path'])?trim($_POST['path']):'';
         $do = isset($_POST['do'])?trim($_POST['do']):echo_json(['code'=>-1, 'msg'=>'param error']);
         try{
@@ -88,8 +95,8 @@ switch($c){
         }catch(Exception $e){
             echo_json(['code'=>-1, 'msg'=>$e->getMessage()]);
         }
+        if(!in_array($do, FileMgr::ACTIONS, true))echo_json(['code'=>-1, 'msg'=>'action error']);
         $mgr = new FileMgr($path);
-        if(!method_exists($mgr, $do))echo_json(['code'=>-1, 'msg'=>'action error']);
         try{
             $result = $mgr->$do();
             echo_json(['code'=>0, 'data'=>$result]);
@@ -116,6 +123,6 @@ switch($c){
         include PAGE_ROOT.'login.php';
         break;
     default:
+        header('Location: ./');
         break;
 }
-

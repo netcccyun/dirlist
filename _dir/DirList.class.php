@@ -18,10 +18,12 @@ class DirList
     // 获取文件后缀名
     public function get_file_ext($filepath)
     {
-        $suffix = explode(".", $filepath);
-        $suffix = end($suffix);
-        $suffix = strtolower($suffix);
-        return $suffix;
+        $filename = str_replace('\\', '/', $filepath);
+        $pos = strrpos($filename, '/');
+        if ($pos !== false) $filename = substr($filename, $pos + 1);
+        $pos = strrpos($filename, '.');
+        if ($pos === false) return '';
+        return strtolower(substr($filename, $pos + 1));
     }
 
     // 获取文件预览类型
@@ -125,27 +127,18 @@ class DirList
     // 检测路径
     public function set_dir_path($dir, $is_file = false)
     {
-        $dir = str_replace("\\", "/", $dir);
+        $dir = str_replace("\\", "/", (string)$dir);
+        $dir = preg_replace('#/+#', '/', $dir);
+        $dir = trim($dir, '/');
 
-        while (strpos($dir, '//')) {
-            $dir = str_replace('//', '/', $dir);
-        }
-
-        if (substr($dir, -1, 1) == '/') {
-            $dir = substr($dir, 0, -1);
-        }
-
-        if (substr($dir, 0, 1) == '/') {
-            $dir = substr($dir, 1);
-        }
-
-        if (empty($dir) || $dir == '.') {
+        if ($dir === '' || $dir === '.') {
             return '.';
         }
 
         if (
-            strpos($dir, '<') !== false || strpos($dir, '>') !== false
+            strpos($dir, '<') !== false || strpos($dir, '>') !== false || strpos($dir, "\0") !== false
             || strpos($dir, '..') !== false || strpos($dir, '/./') !== false
+            || substr($dir, 0, 2) === './' || substr($dir, -2) === '/.'
         ) {
             throw new Exception('检测到无效的路径字符串');
         }
@@ -164,6 +157,21 @@ class DirList
             if (!file_exists($dir) || !is_dir($dir)) {
                 throw new Exception('文件路径不存在');
             }
+        }
+
+        $root = realpath('.');
+        $full = realpath($dir);
+        if ($root === false || $full === false) {
+            throw new Exception('文件路径不存在');
+        }
+        $rootNorm = strtolower(str_replace('\\', '/', $root));
+        $fullNorm = strtolower(str_replace('\\', '/', $full));
+        if ($fullNorm !== $rootNorm && strpos($fullNorm, $rootNorm . '/') !== 0) {
+            throw new Exception('拒绝访问');
+        }
+        // 用真实路径再判断一次，防止大小写不同（Windows）、末尾带点等写法绕过隐藏规则
+        if ($fullNorm !== $rootNorm && $this->is_hide(substr(str_replace('\\', '/', $full), strlen($root) + 1))) {
+            throw new Exception('拒绝访问');
         }
 
         return $dir;
@@ -250,6 +258,7 @@ class DirList
             if (stripos($file['name'], $s) === false) continue;
             $relativePathEncode = $file['path'];
             $relativePath = $this->encoding($file['path'], false);
+            if (!is_file($relativePath)) continue;
             $ctime = filemtime($relativePath);
             $ctime = date("Y-m-d H:i", $ctime);
             $src = './' . implode('/', array_map('rawurlencode', explode('/', $relativePath)));
@@ -267,6 +276,7 @@ class DirList
                 'size' => $size,
                 'size_format' => $this->size_format($size),
                 'view_type' => $view_type,
+                'ext' => $ext,
             ];
             if ($view_type == 'audio') {
                 $audio_list[] = [
@@ -348,17 +358,23 @@ class DirList
                         'url' => $src,
                     ];
                 }
-                if (($name == 'readme.md' || $name == 'README.md') && $size < 1024 * 1024 * 5) $readme_md = $relativePath;
+                if (strtolower($name) == 'readme.md' && $size < 1024 * 1024 * 5) $readme_md = $relativePath;
             }
         }
         $listdir = array_merge($newdir, $newfile);
 
-        if ($conf['page_size'] > 0) {
+        $page = 0;
+        $pagenum = 0;
+        if (!empty($conf['page_size']) && intval($conf['page_size']) > 0) {
             $pagesize = intval($conf['page_size']);
-            $pagenum = ceil(count($listdir) / $pagesize);
+            $pagenum = (int)ceil(count($listdir) / $pagesize);
             if ($pagenum > 1) {
                 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+                if ($page < 1) $page = 1;
+                if ($page > $pagenum) $page = $pagenum;
                 $listdir = array_slice($listdir, ($page - 1) * $pagesize, $pagesize);
+            } else {
+                $pagenum = 0;
             }
         }
 
@@ -414,7 +430,7 @@ class DirList
     }
 
     // 文件是否隐藏
-    private function is_hide($filePath)
+    public function is_hide($filePath)
     {
         $hidden_files = $this->config['hidden_files'];
         if ($this->config['hide_dot_files']) {
@@ -424,6 +440,8 @@ class DirList
             );
         }
 
+        // Windows文件系统不区分大小写，统一按小写匹配
+        $filePath = strtolower(str_replace('\\', '/', $filePath));
         foreach ($hidden_files as $hiddenPath) {
             if (fnmatch($hiddenPath, $filePath)) {
                 return true;
@@ -433,7 +451,7 @@ class DirList
     }
 
     // 解决中文文件名编码问题
-    private function encoding($str, $type = false)
+    public function encoding($str, $type = false)
     {
         global $conf;
         if ($conf['name_encode'] == 'gbk' && preg_match("/[\x7f-\xff]/", $str)) {

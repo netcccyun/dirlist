@@ -7,9 +7,9 @@ if(!defined('DIR_INIT'))exit();
 	<meta name="renderer" content="webkit">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title><?php echo $conf['title']?></title>
-	<meta name="keywords" content="Beauty Directory,Directory Lister目录列表,目录索引" />
-	<meta name="description" content="Beauty Directory目录列表程序" />
+	<title><?php echo h($conf['title'])?></title>
+	<meta name="keywords" content="<?php echo h($conf['keywords'])?>" />
+	<meta name="description" content="<?php echo h($conf['description'])?>" />
 	<link rel="stylesheet" href="<?php echo $cdnpublic?>font-awesome/4.7.0/css/font-awesome.min.css">
 	<link rel="stylesheet" href="<?php echo $cdnpublic?>twitter-bootstrap/4.6.2/css/bootstrap.min.css">
 	<link rel="stylesheet" href="<?php echo $cdnpublic?>github-markdown-css/5.1.0/github-markdown.min.css">
@@ -37,8 +37,10 @@ if(!defined('DIR_INIT'))exit();
 <?php
 $navs = explode('|', $conf['nav']);
 foreach($navs as $nav){
-	$nav_arr = explode('*', $nav);
-	echo '<li class="nav-item"><a class="nav-link" href="'.$nav_arr[1].'" target="_blank">'.$nav_arr[0].'</a></li>';
+	if($nav === '') continue;
+	$nav_arr = explode('*', $nav, 2);
+	if(count($nav_arr) < 2) continue;
+	echo '<li class="nav-item"><a class="nav-link" href="'.h(trim($nav_arr[1])).'" target="_blank" rel="noopener">'.h(trim($nav_arr[0])).'</a></li>';
 }
 ?>
 				<li class="nav-item <?php echo $c=='admin'?'active':'';?>">
@@ -48,7 +50,7 @@ foreach($navs as $nav){
 
 			<form class="form-inline my-2 my-lg-0 d-none d-lg-flex" action="./" method="GET">
 				<input type="hidden" name="c" value="search">
-				<input name="s" class="form-control mr-sm-2" type="search" placeholder="请输入搜索关键字" aria-label="Search" value="">
+				<input name="s" class="form-control mr-sm-2" type="search" placeholder="请输入搜索关键字" aria-label="Search" value="<?php echo $c=='search' && isset($s) ? $s : ''?>">
 				<button class="btn btn-outline-primary my-2 my-sm-0" type="submit">	<i class="fa fa-search" aria-hidden="true"></i> 搜索</button>
 			</form>
 												

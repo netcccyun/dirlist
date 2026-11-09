@@ -41,7 +41,7 @@ class Cache
         } elseif (is_numeric($raw)) {
             return $raw;
         } else {
-            return unserialize($raw);
+            return unserialize($raw, ['allowed_classes' => false]);
         }
     }
 
@@ -63,8 +63,11 @@ class Cache
             clearstatcache();
             return true;
         }
-
         return false;
+    }
+
+    public function exists($name){
+        return is_file($this->getCacheKey($name));
     }
 
     public function delete($name){

@@ -1,9 +1,9 @@
 <?php
 if(!defined('DIR_INIT'))exit();
 ?>
-<?php if($conf['footer_bar'] == 1){?>
+<?php if(!empty($conf['footer_bar']) && $conf['footer_bar'] == 1){?>
 <footer class="footer card-footer mt-3" id="footer">
-<span> Copyright &copy;<?php echo date('Y')?> <?php echo $conf['title']?>  <?php echo $conf['footer']?></span>
+<span> Copyright &copy;<?php echo date('Y')?> <?php echo h($conf['title'])?>  <?php echo $conf['footer']?></span>
 </footer>
 <?php }?>
 <script src="<?php echo $cdnpublic?>jquery/3.7.1/jquery.min.js"></script>

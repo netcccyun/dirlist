@@ -13,7 +13,7 @@ if(isset($_POST['username']) && isset($_POST['password'])){
 		$conf['admin_session'] = getSid();
 		$conf['admin_lastlogin'] = date('Y-m-d H:i:s');
 		if($CACHE->set('config', $conf)){
-			setcookie("admin_session", $conf['admin_session'], time() + 2592000);
+			setcookie("admin_session", $conf['admin_session'], time() + 2592000, '', '', false, true);
 			echo_json(['code'=>0]);
 		}else{
 			echo_json(['code'=>-1, 'msg'=>'登录失败，可能无文件写入权限']);

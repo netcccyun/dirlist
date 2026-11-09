@@ -1,14 +1,33 @@
 <?php
 if(!defined('DIR_INIT'))exit();
 
-session_start();
+if(session_status() !== PHP_SESSION_ACTIVE) session_start();
 
-if(!empty($_FILES) && $_POST['type'] == 'fileupload'){
+function upload_check_filename($filename){
+    global $x, $path;
+    if ($filename === '' || $filename === '.' || $filename === '..' || strpos($filename, '..') !== false || preg_match('/[:\/\\\\?*<>|"\x00]/', $filename)) {
+        exit(json_encode(['code'=>-1, 'msg'=>'文件名不合法']));
+    }
+    $filename = $x->encoding($filename, false);
+    if ($x->is_hide(($path === '.' ? '' : $path.'/').$filename)) {
+        exit(json_encode(['code'=>-1, 'msg'=>'该文件名为系统保护文件，禁止上传']));
+    }
+    return $filename;
+}
+function upload_check_token(){
+    if(empty($_POST['token']) || empty($_SESSION['csrf_token']) || !is_string($_POST['token']) || !hash_equals($_SESSION['csrf_token'], $_POST['token'])) exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
+}
+
+if(!empty($_FILES) && !empty($_POST['type']) && $_POST['type'] == 'fileupload'){
     header('Content-Type: application/json; charset=UTF-8');
-    if(!$_POST['token'] || $_POST['token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
-    $chunkIndex = intval($_POST['dzchunkindex']);
-    $chunkTotal = intval($_POST['dztotalchunkcount']);
-    $filename = $_FILES['file']['name'];
+    upload_check_token();
+    if(!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK){
+        exit(json_encode(['code'=>-1, 'msg'=>'上传失败，错误码：'.(isset($_FILES['file']['error']) ? $_FILES['file']['error'] : '-')]));
+    }
+    $chunkIndex = isset($_POST['dzchunkindex']) ? intval($_POST['dzchunkindex']) : 0;
+    $chunkTotal = isset($_POST['dztotalchunkcount']) ? intval($_POST['dztotalchunkcount']) : 0;
+    $filename = basename(str_replace('\\', '/', $_FILES['file']['name']));
+    $filename = upload_check_filename($filename);
     $tmp_name = $_FILES['file']['tmp_name'];
     $fullPath = $path.'/'.$filename;
     if ($chunkTotal){
@@ -18,16 +37,19 @@ if(!empty($_FILES) && $_POST['type'] == 'fileupload'){
         }
         $in = fopen($tmp_name, "rb");
         if(!$in){
+            fclose($out);
             exit(json_encode(['code'=>-1, 'msg'=>'分块上传失败，无法读取临时文件']));
         }
-        while ($buff = fread($in, 4096)) { fwrite($out, $buff); }
+        stream_copy_to_stream($in, $out);
         fclose($in);
         fclose($out);
-        unlink($tmp_name);
+        @unlink($tmp_name);
 
         if ($chunkIndex == $chunkTotal - 1) {
             file_exists($fullPath) && unlink($fullPath);
-            rename($fullPath.'.part', $fullPath);
+            if(!rename($fullPath.'.part', $fullPath)){
+                exit(json_encode(['code'=>-1, 'msg'=>'保存文件失败，可能无文件写入权限']));
+            }
             exit(json_encode(['code'=>0]));
         }else{
             exit(json_encode(['code'=>0, 'chunkindex'=>$chunkIndex]));
@@ -40,24 +62,29 @@ if(!empty($_FILES) && $_POST['type'] == 'fileupload'){
             exit(json_encode(['code'=>-1, 'msg'=>$filename.' 上传失败，可能无文件写入权限']));
         }
     }
-}else if($_POST['type'] == 'urlupload' && !empty($_POST['url']) && !empty($_POST['filename'])){
+}else if(!empty($_POST['type']) && $_POST['type'] == 'urlupload' && !empty($_POST['url']) && !empty($_POST['filename'])){
     header('Content-Type: application/json; charset=UTF-8');
+    upload_check_token();
     $url = trim($_POST['url']);
-    $filename = trim($_POST['filename']);
+    $show_filename = basename(str_replace('\\', '/', trim($_POST['filename'])));
     if(!filter_var($url, FILTER_VALIDATE_URL)) exit(json_encode(['code'=>-1, 'msg'=>'URL格式不正确']));
-    if(!$_POST['token'] || $_POST['token']!=$_SESSION['csrf_token'])exit('{"code":-1,"msg":"CSRF TOKEN ERROR"}');
+    $scheme = strtolower(parse_url($url, PHP_URL_SCHEME));
+    if(!in_array($scheme, ['http','https'], true)) exit(json_encode(['code'=>-1, 'msg'=>'仅支持http/https远程地址']));
+    $filename = upload_check_filename($show_filename);
     $fullPath = $path.'/'.$filename;
     try{
         curl_download($url, $fullPath.'.part');
         file_exists($fullPath) && unlink($fullPath);
-        rename($fullPath.'.part', $fullPath);
-        exit(json_encode(['code'=>0, 'filename'=>$filename]));
+        if(!rename($fullPath.'.part', $fullPath)) throw new Exception('保存文件失败，可能无文件写入权限');
+        exit(json_encode(['code'=>0, 'filename'=>$show_filename]));
     }catch(Exception $e){
         exit(json_encode(['code'=>-1, 'msg'=>$e->getMessage()]));
     }
 }
-$csrf_token = md5(mt_rand(0,999).time());
-$_SESSION['csrf_token'] = $csrf_token;
+// 复用已有token，避免同时打开多个上传窗口时旧窗口token失效
+if(empty($_SESSION['csrf_token'])) $_SESSION['csrf_token'] = bin2hex(random_bytes(16));
+$csrf_token = $_SESSION['csrf_token'];
+$show_path = $x->encoding($path, true);
 
 header('Content-Type: text/html; charset=UTF-8');
 ?><!DOCTYPE html>
@@ -98,11 +125,11 @@ form.dropzone { min-height:280px;border:2px dashed #007bff;line-height:6rem; }
     </div>
     <div class="card-body">
         <p class="card-text">
-            目标文件夹: <?php echo $path?>/
+            目标文件夹: <?php echo h($show_path)?>/
         </p>
         <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="fileupload" role="tabpanel" aria-labelledby="fileupload-tab">
-            <form action="?c=upload&path=<?php echo urlencode($path);?>" class="dropzone card-tabs-container" id="fileUploader" enctype="multipart/form-data">
+            <form action="?c=upload&amp;path=<?php echo urlencode($show_path);?>" class="dropzone card-tabs-container" id="fileUploader" enctype="multipart/form-data">
                 <input type="hidden" name="type" value="fileupload">
                 <input type="hidden" name="token" value="<?php echo $csrf_token?>">
                 <div class="fallback">
@@ -136,7 +163,7 @@ form.dropzone { min-height:280px;border:2px dashed #007bff;line-height:6rem; }
     </div>
 </div>
 <script src="<?php echo $cdnpublic?>jquery/3.7.1/jquery.min.js"></script>
-<script src="<?php echo $cdnpublic?>twitter-bootstrap/4.6.2/js/bootstrap.min.js"></script>
+<script src="<?php echo $cdnpublic?>twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo $cdnpublic?>layer/3.1.1/layer.js"></script>
 <script src="<?php echo $cdnpublic?>dropzone/5.9.3/min/dropzone.min.js"></script>
 <script>
@@ -161,10 +188,10 @@ form.dropzone { min-height:280px;border:2px dashed #007bff;line-height:6rem; }
                 if(_response.code != 0) {
                     layer.msg(_response.msg, {icon: 2});
                 }
-                window.parent.postMessage('reload')
+                window.parent.postMessage('reload', '*')
 
             }).on("error", function(file, response) {
-                layer.msg(response, {icon: 2});
+                layer.msg(typeof response === 'object' && response ? (response.msg || response.error || '上传失败') : response, {icon: 2});
             });
         }
     }
@@ -172,15 +199,15 @@ form.dropzone { min-height:280px;border:2px dashed #007bff;line-height:6rem; }
         var ii = layer.msg('正在上传，请稍候...', {icon: 16,shade: 0.3,time: 15000});
         $.ajax({
             type : "POST",
-            url : "?c=upload&path=<?php echo urlencode($path);?>",
+            url : "?c=upload&path=<?php echo urlencode($show_path);?>",
             data : $(obj).serialize(),
             dataType : 'json',
             success : function(data) {
                 layer.close(ii);
                 if(data.code == 0){
-                    $("#upload-msg").html('<storng>'+data.filename+'</strong> 文件上传成功！');
+                    $("#upload-msg").empty().append($('<strong>').text(data.filename)).append(' 文件上传成功！');
                     $("#upload-alert").addClass("show");
-                    window.parent.postMessage('reload')
+                    window.parent.postMessage('reload', '*')
                 }else{
                     layer.alert(data.msg, {icon: 2})
                 }

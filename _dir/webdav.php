@@ -1,6 +1,6 @@
 <?php
 
-require './inc.php';
+require __DIR__ . '/inc.php';
 
 /**
  * WebDAV服务端类
@@ -51,11 +51,17 @@ class WebDAVServer
         }
         
         $method = $_SERVER['REQUEST_METHOD'];
-        $path = $this->getRequestPath();
+        try {
+            $path = $this->getRequestPath();
+        } catch (Exception $e) {
+            header('HTTP/1.1 403 Forbidden');
+            echo 'Error: ' . $e->getMessage();
+            exit;
+        }
         
         // 设置CORS头
         header('Access-Control-Allow-Origin: *');
-        header('Access-Control-Allow-Methods: OPTIONS, GET, PUT, POST, DELETE, PROPFIND, MKCOL, COPY, MOVE, LOCK, UNLOCK');
+        header('Access-Control-Allow-Methods: OPTIONS, GET, HEAD, PUT, POST, DELETE, PROPFIND, MKCOL, COPY, MOVE, LOCK, UNLOCK');
         header('Access-Control-Allow-Headers: Authorization, Content-Type, Depth, If-Modified-Since, If-None-Match, Destination, Overwrite, Lock-Token, Timeout');
         header('Access-Control-Expose-Headers: ETag, Content-Length, Allow');
         
@@ -64,7 +70,7 @@ class WebDAVServer
             header('HTTP/1.1 200 OK');
             header('DAV: 1, 2, 3'); // 添加WebDAV级别支持
             header('MS-Author-Via: DAV'); // Windows客户端需要这个头
-            header('Allow: OPTIONS, GET, PUT, POST, DELETE, PROPFIND, MKCOL, COPY, MOVE, LOCK, UNLOCK');
+            header('Allow: OPTIONS, GET, HEAD, PUT, POST, DELETE, PROPFIND, MKCOL, COPY, MOVE, LOCK, UNLOCK');
             header('Content-Length: 0');
             exit;
         }
@@ -73,6 +79,9 @@ class WebDAVServer
             switch ($method) {
                 case 'GET':
                     $this->handleGet($path);
+                    break;
+                case 'HEAD':
+                    $this->handleHead($path);
                     break;
                 case 'PUT':
                     $this->handlePut($path);
@@ -100,7 +109,7 @@ class WebDAVServer
                     break;
                 default:
                     header('HTTP/1.1 405 Method Not Allowed');
-                    header('Allow: OPTIONS, GET, PUT, POST, DELETE, PROPFIND, MKCOL, COPY, MOVE, LOCK, UNLOCK');
+                    header('Allow: OPTIONS, GET, HEAD, PUT, POST, DELETE, PROPFIND, MKCOL, COPY, MOVE, LOCK, UNLOCK');
                     break;
             }
         } catch (Exception $e) {
@@ -157,10 +166,10 @@ class WebDAVServer
     private function getRequestPath()
     {
         $path = $this->extractWebDavPath(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
-        $path = urldecode($path);
+        $path = rawurldecode($path);
         $path = str_replace('\\', '/', $path);
         $path = trim($path, '/');
-        if (strpos($path, '..') !== false) {
+        if (strpos($path, '..') !== false || strpos($path, "\0") !== false) {
             throw new Exception('Invalid path');
         }
         if ($path !== '' && $this->is_hide($path)) {
@@ -174,7 +183,35 @@ class WebDAVServer
      */
     private function getFilesystemPath($path)
     {
-        return $this->basePath . DIRECTORY_SEPARATOR . $path;
+        $path = str_replace('\\', '/', $path);
+        if (strpos($path, '..') !== false || strpos($path, "\0") !== false) {
+            throw new Exception('Invalid path');
+        }
+        $full = $this->basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
+        $real = realpath($full);
+        if ($real !== false) {
+            if (!$this->isInsideBase($real)) {
+                throw new Exception('Invalid path');
+            }
+            // 按真实路径再检查一次隐藏规则，防止大小写等写法绕过
+            $rel = ltrim(substr(str_replace('\\', '/', $real), strlen(str_replace('\\', '/', $this->basePath))), '/');
+            if ($rel !== '' && $this->is_hide($rel)) {
+                throw new Exception('Access denied');
+            }
+            return $real;
+        }
+        $parent = realpath(dirname($full));
+        if ($parent === false || !$this->isInsideBase($parent)) {
+            throw new Exception('Invalid path');
+        }
+        return $full;
+    }
+
+    private function isInsideBase($realPath)
+    {
+        $base = strtolower(str_replace('\\', '/', $this->basePath));
+        $real = strtolower(str_replace('\\', '/', $realPath));
+        return $real === $base || strpos($real, $base . '/') === 0;
     }
     
     /**
@@ -230,11 +267,43 @@ class WebDAVServer
     }
     
     /**
+     * 处理HEAD请求
+     */
+    private function handleHead($path)
+    {
+        $filePath = $this->getFilesystemPath($path);
+
+        if (!file_exists($filePath)) {
+            header('HTTP/1.1 404 Not Found');
+            return;
+        }
+
+        if (is_dir($filePath)) {
+            header('Content-Type: text/html; charset=utf-8');
+            return;
+        }
+        $lastModified = filemtime($filePath);
+        header('Content-Type: ' . $this->getMimeType($filePath));
+        header('Content-Length: ' . filesize($filePath));
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $lastModified) . ' GMT');
+        header('ETag: "' . md5($filePath . $lastModified) . '"');
+    }
+
+    /**
      * 处理PUT请求
      */
     private function handlePut($path)
     {
+        if ($path === '') {
+            header('HTTP/1.1 405 Method Not Allowed');
+            return;
+        }
         $filePath = $this->getFilesystemPath($path);
+        if (is_dir($filePath)) {
+            header('HTTP/1.1 405 Method Not Allowed');
+            return;
+        }
+        $existed = file_exists($filePath);
         $dirPath = dirname($filePath);
         
         // 确保目录存在
@@ -251,7 +320,7 @@ class WebDAVServer
             fclose($input);
             fclose($output);
             
-            header('HTTP/1.1 201 Created');
+            header($existed ? 'HTTP/1.1 204 No Content' : 'HTTP/1.1 201 Created');
         } else {
             header('HTTP/1.1 500 Internal Server Error');
         }
@@ -262,6 +331,11 @@ class WebDAVServer
      */
     private function handleDelete($path)
     {
+        // 禁止删除WebDAV根目录（即整个站点）
+        if ($path === '') {
+            header('HTTP/1.1 403 Forbidden');
+            return;
+        }
         $filePath = $this->getFilesystemPath($path);
         
         if (!file_exists($filePath)) {
@@ -290,7 +364,7 @@ class WebDAVServer
             return;
         }
         
-        $depth = isset($_SERVER['HTTP_DEPTH']) ? $_SERVER['HTTP_DEPTH'] : '1';
+        $depth = isset($_SERVER['HTTP_DEPTH']) ? strtolower(trim($_SERVER['HTTP_DEPTH'])) : '1';
         
         // 添加WebDAV头
         header('HTTP/1.1 207 Multi-Status');
@@ -310,14 +384,22 @@ class WebDAVServer
      */
     private function handleMkcol($path)
     {
+        if ($path === '') {
+            header('HTTP/1.1 405 Method Not Allowed');
+            return;
+        }
         $dirPath = $this->getFilesystemPath($path);
         
         if (file_exists($dirPath)) {
             header('HTTP/1.1 405 Method Not Allowed');
             return;
         }
+        if (!is_dir(dirname($dirPath))) {
+            header('HTTP/1.1 409 Conflict');
+            return;
+        }
         
-        if (mkdir($dirPath, 0755, true)) {
+        if (mkdir($dirPath, 0755)) {
             header('HTTP/1.1 201 Created');
         } else {
             header('HTTP/1.1 403 Forbidden');
@@ -327,39 +409,72 @@ class WebDAVServer
     /**
      * 处理COPY请求
      */
-    private function handleCopy($path)
+    /**
+     * 解析COPY/MOVE的目标路径，失败时已输出响应并返回false
+     */
+    private function prepareDestination($path, &$sourcePath, &$destPath, &$existed)
     {
+        if ($path === '') {
+            header('HTTP/1.1 403 Forbidden');
+            return false;
+        }
         $sourcePath = $this->getFilesystemPath($path);
-        $destination = $_SERVER['HTTP_DESTINATION'];
+        $destination = isset($_SERVER['HTTP_DESTINATION']) ? $_SERVER['HTTP_DESTINATION'] : '';
         
         if (!$destination) {
             header('HTTP/1.1 400 Bad Request');
-            return;
+            return false;
         }
         
         $destRel = $this->extractWebDavPath(parse_url($destination, PHP_URL_PATH));
-        $destRel = trim(str_replace('\\', '/', urldecode($destRel)), '/');
+        $destRel = trim(str_replace('\\', '/', rawurldecode($destRel)), '/');
+        if ($destRel === '' || strpos($destRel, '..') !== false || strpos($destRel, "\0") !== false || $this->is_hide($destRel)) {
+            header('HTTP/1.1 403 Forbidden');
+            return false;
+        }
         $destPath = $this->getFilesystemPath($destRel);
         
         if (!file_exists($sourcePath)) {
             header('HTTP/1.1 404 Not Found');
-            return;
+            return false;
+        }
+
+        $srcNorm = strtolower(str_replace('\\', '/', $sourcePath));
+        $dstNorm = strtolower(str_replace('\\', '/', $destPath));
+        if ($srcNorm === $dstNorm || (is_dir($sourcePath) && strpos($dstNorm, rtrim($srcNorm, '/') . '/') === 0)) {
+            header('HTTP/1.1 403 Forbidden');
+            return false;
         }
         
-        $overwrite = !isset($_SERVER['HTTP_OVERWRITE']) || $_SERVER['HTTP_OVERWRITE'] === 'T';
+        $overwrite = !isset($_SERVER['HTTP_OVERWRITE']) || strtoupper($_SERVER['HTTP_OVERWRITE']) === 'T';
+        $existed = file_exists($destPath);
         
-        if (file_exists($destPath) && !$overwrite) {
+        if ($existed && !$overwrite) {
             header('HTTP/1.1 412 Precondition Failed');
-            return;
+            return false;
         }
+        if ($existed) {
+            is_dir($destPath) ? $this->deleteDirectory($destPath) : unlink($destPath);
+        }
+        return true;
+    }
+
+    private function handleCopy($path)
+    {
+        if (!$this->prepareDestination($path, $sourcePath, $destPath, $existed)) return;
         
         if (is_dir($sourcePath)) {
             $this->copyDirectory($sourcePath, $destPath);
+            $ok = is_dir($destPath);
         } else {
-            copy($sourcePath, $destPath);
+            $ok = copy($sourcePath, $destPath);
         }
         
-        header('HTTP/1.1 201 Created');
+        if (!$ok) {
+            header('HTTP/1.1 500 Internal Server Error');
+            return;
+        }
+        header($existed ? 'HTTP/1.1 204 No Content' : 'HTTP/1.1 201 Created');
     }
     
     /**
@@ -367,32 +482,13 @@ class WebDAVServer
      */
     private function handleMove($path)
     {
-        $sourcePath = $this->getFilesystemPath($path);
-        $destination = $_SERVER['HTTP_DESTINATION'];
+        if (!$this->prepareDestination($path, $sourcePath, $destPath, $existed)) return;
         
-        if (!$destination) {
-            header('HTTP/1.1 400 Bad Request');
+        if (!rename($sourcePath, $destPath)) {
+            header('HTTP/1.1 500 Internal Server Error');
             return;
         }
-        
-        $destRel = $this->extractWebDavPath(parse_url($destination, PHP_URL_PATH));
-        $destRel = trim(str_replace('\\', '/', urldecode($destRel)), '/');
-        $destPath = $this->getFilesystemPath($destRel);
-        
-        if (!file_exists($sourcePath)) {
-            header('HTTP/1.1 404 Not Found');
-            return;
-        }
-        
-        $overwrite = !isset($_SERVER['HTTP_OVERWRITE']) || $_SERVER['HTTP_OVERWRITE'] === 'T';
-        
-        if (file_exists($destPath) && !$overwrite) {
-            header('HTTP/1.1 412 Precondition Failed');
-            return;
-        }
-        
-        rename($sourcePath, $destPath);
-        header('HTTP/1.1 201 Created');
+        header($existed ? 'HTTP/1.1 204 No Content' : 'HTTP/1.1 201 Created');
     }
     
     /**
@@ -403,6 +499,7 @@ class WebDAVServer
         // 简化实现：返回成功但不实际锁定
         header('Content-Type: text/xml; charset="utf-8"');
         header('DAV: 1, 2, 3');
+        header('Lock-Token: <opaquelocktoken:' . md5($path) . '>');
         echo '<?xml version="1.0" encoding="utf-8"?>';
         echo '<D:prop xmlns:D="DAV:">';
         echo '<D:lockdiscovery>';
@@ -468,7 +565,8 @@ class WebDAVServer
         echo '<ul>';
         
         if ($webPath !== '') {
-            echo '<li><a href="../">../</a></li>';
+            $parent = dirname($webPath);
+            echo '<li><a href="' . htmlspecialchars($this->getHref($parent === '.' ? '' : $parent, true)) . '">../</a></li>';
         }
         
         $items = scandir($dirPath);
@@ -479,10 +577,10 @@ class WebDAVServer
             $itemWebPath = ($webPath === '' ? '' : $webPath . '/') . $item;
             $isDir = is_dir($itemPath);
 
-            if ($this->is_hide($item)) continue;
+            if ($this->is_hide($item) || $this->is_hide($itemWebPath)) continue;
             
             echo '<li>';
-            echo '<a href="' . htmlspecialchars($itemWebPath) . '">';
+            echo '<a href="' . htmlspecialchars($this->getHref($itemWebPath, $isDir)) . '">';
             echo htmlspecialchars($item) . ($isDir ? '/' : '');
             echo '</a>';
             echo '</li>';
@@ -552,6 +650,9 @@ class WebDAVServer
      */
     private function getMimeType($filePath)
     {
+        if (!function_exists('finfo_open')) {
+            return 'application/octet-stream';
+        }
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimeType = finfo_file($finfo, $filePath);
         finfo_close($finfo);
@@ -618,6 +719,7 @@ class WebDAVServer
             );
         }
 
+        $filePath = strtolower(str_replace('\\', '/', $filePath));
         foreach ($hidden_files as $hiddenPath) {
             if (fnmatch($hiddenPath, $filePath)) {
                 return true;

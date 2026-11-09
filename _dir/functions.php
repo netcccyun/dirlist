@@ -166,7 +166,6 @@ html{background:#eee}body{background:#fff;color:#333;font-family:"微软雅黑",
     <body id="error-page">
         <?php echo '<h3>'.$title.'</h3>';
         echo $msg; ?>
-	<script>document.getElementById('waiting').style.visibility = 'hidden';</script>
     </body>
     </html>
     <?php
@@ -174,11 +173,21 @@ html{background:#eee}body{background:#fff;color:#333;font-family:"微软雅黑",
 }
 
 function checkRefererHost(){
-	if(!$_SERVER['HTTP_REFERER'])return false;
+	if(empty($_SERVER['HTTP_REFERER']))return false;
 	$url_arr = parse_url($_SERVER['HTTP_REFERER']);
-	$http_host = $_SERVER['HTTP_HOST'];
-	if(strpos($http_host,':'))$http_host = substr($http_host, 0, strpos($http_host, ':'));
-	return $url_arr['host'] === $http_host;
+	if(empty($url_arr['host']))return false;
+	$http_host = parse_url('http://'.$_SERVER['HTTP_HOST'], PHP_URL_HOST);
+	if(empty($http_host))return false;
+	return strtolower($url_arr['host']) === strtolower($http_host);
+}
+
+function h($str){
+	return htmlspecialchars((string)$str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+// 用于HTML属性内的JS字符串参数（如onclick），结果已带引号
+function js_attr($str){
+	return htmlspecialchars(json_encode((string)$str, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_HEX_TAG), ENT_QUOTES, 'UTF-8');
 }
 
 function echo_json($arr){
@@ -197,7 +206,15 @@ function curl_download($url, $localpath, $timeout = 300)
 	curl_setopt($ch, CURLOPT_URL, $url);
 	curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
 	$fp = fopen($localpath, 'w');
+	if (!$fp) {
+		curl_close($ch);
+		throw new Exception('下载文件失败：无法写入文件，可能无文件写入权限');
+	}
 	curl_setopt($ch, CURLOPT_FILE, $fp);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+	curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+	curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+	curl_setopt($ch, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36");
@@ -206,12 +223,14 @@ function curl_download($url, $localpath, $timeout = 300)
 		$message = curl_error($ch);
 		curl_close($ch);
 		fclose($fp);
+		@unlink($localpath);
 		throw new Exception('下载文件失败：'.$message);
 	}
 	$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	if($httpcode>299){
 		curl_close($ch);
 		fclose($fp);
+		@unlink($localpath);
 		throw new Exception('下载文件失败：HTTPCODE-'.$httpcode);
 	}
 	curl_close($ch);

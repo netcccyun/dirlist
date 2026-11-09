@@ -4,13 +4,15 @@ if(!defined('DIR_INIT'))exit();
 $name = basename($path);
 $ext = $x->get_file_ext($path);
 if(isset($_POST['file_content']) && isset($_POST['character'])){
-    $file_content = stripslashes($_POST['file_content']);
+    if(!checkRefererHost()) echo_json(['code'=>-1, 'msg'=>'referer error']);
+    $file_content = $_POST['file_content'];
     $character = $_POST['character'];
+    if (!in_array($character, ['UTF-8', 'EUC-CN', 'BIG-5', 'CP936'], true)) echo_json(['code'=>-1, 'msg'=>'文件编码参数错误']);
     if ($character != 'UTF-8')
     {
         $file_content = mb_convert_encoding($file_content, $character, 'UTF-8');
     }
-    file_put_contents($path, $file_content);
+    if(file_put_contents($path, $file_content) === false) echo_json(['code'=>-1, 'msg'=>'保存失败']);
     echo_json(['code'=>0]);
 }
 
@@ -33,7 +35,7 @@ header('Content-Type: text/html; charset=UTF-8');
 </head>
 <body>
 <form id="file_content_form" method="POST">
-<input type="hidden" name="path" id="path" value="<?php echo $path;?>" />
+<input type="hidden" name="path" id="path" value="<?php echo h($x->encoding($path, true));?>" />
 <input type="hidden" name="character" id="character" value="<?php echo $character;?>" />
 <pre id="file_content" name="file_content"><?php echo $file_content;?></pre>
 <div class="title" style="padding: 6px 17px;">

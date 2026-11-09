@@ -14,16 +14,16 @@ if(isset($_GET['do'])){
 		}
 	}
 	elseif($_GET['do'] == 'account'){
-		$username=trim($_POST['username']);
-		$oldpwd=trim($_POST['oldpwd']);
-		$newpwd=trim($_POST['newpwd']);
-		$newpwd2=trim($_POST['newpwd2']);
-		if(empty($username))echo_json(['code'=>-1, 'msg'=>'用户名不能为空！']);
+		$username=isset($_POST['username'])?trim($_POST['username']):'';
+		$oldpwd=isset($_POST['oldpwd'])?trim($_POST['oldpwd']):'';
+		$newpwd=isset($_POST['newpwd'])?trim($_POST['newpwd']):'';
+		$newpwd2=isset($_POST['newpwd2'])?trim($_POST['newpwd2']):'';
+		if($username==='')echo_json(['code'=>-1, 'msg'=>'用户名不能为空！']);
+		if($oldpwd==='' || md5($oldpwd)!==$conf['admin_password'])echo_json(['code'=>-1, 'msg'=>'旧密码不正确！']);
 		$conf['admin_username'] = $username;
 		$msg = '修改成功！';
-		if(!empty($newpwd) && !empty($newpwd2)){
-			if(md5($oldpwd)!=$conf['admin_password'])echo_json(['code'=>-1, 'msg'=>'旧密码不正确！']);
-			if($newpwd!=$newpwd2)echo_json(['code'=>-1, 'msg'=>'两次输入的密码不一致！']);
+		if($newpwd!=='' || $newpwd2!==''){
+			if($newpwd!==$newpwd2)echo_json(['code'=>-1, 'msg'=>'两次输入的密码不一致！']);
 			$conf['admin_password'] = md5($newpwd);
 			$conf['admin_session'] = null;
 			$msg = '修改成功！请重新登录';
@@ -39,7 +39,10 @@ if(isset($_GET['do'])){
 		echo_json(['code'=>0]);
 	}
 	elseif($_GET['do'] == 'logout'){
-		setcookie("admin_session", "", time() - 2592000);
+		// 服务端会话一并作废，否则旧cookie泄露后仍可登录
+		$conf['admin_session'] = '';
+		$CACHE->set('config', $conf);
+		setcookie("admin_session", "", time() - 2592000, '', '', false, true);
 		header('Content-Type: text/html; charset=UTF-8');
 		exit("<script language='javascript'>alert('退出登录成功！');window.location.href='./';</script>");
 	}
@@ -97,15 +100,15 @@ location ~* /([^/]+\.[^/]+)$ {
   <form onsubmit="return saveSetting(this)" method="post" role="form">
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">网站标题</label>
-	  <div class="col-sm-9"><input type="text" name="title" value="<?php echo $conf['title']; ?>" class="form-control" required/></div>
+	  <div class="col-sm-9"><input type="text" name="title" value="<?php echo h($conf['title']); ?>" class="form-control" required/></div>
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">关键字</label>
-	  <div class="col-sm-9"><input type="text" name="keywords" value="<?php echo $conf['keywords']; ?>" class="form-control"/></div>
+	  <div class="col-sm-9"><input type="text" name="keywords" value="<?php echo h($conf['keywords']); ?>" class="form-control"/></div>
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">网站描述</label>
-	  <div class="col-sm-9"><input type="text" name="description" value="<?php echo $conf['description']; ?>" class="form-control"/></div>
+	  <div class="col-sm-9"><input type="text" name="description" value="<?php echo h($conf['description']); ?>" class="form-control"/></div>
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">首页公告</label>
@@ -117,7 +120,7 @@ location ~* /([^/]+\.[^/]+)$ {
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">顶部导航链接</label>
-	  <div class="col-sm-9"><textarea class="form-control" name="nav" rows="3" placeholder=""><?php echo $conf['nav']?></textarea><font color="green">填写格式：链接文字*链接地址|链接文字*链接地址</font></div>
+	  <div class="col-sm-9"><textarea class="form-control" name="nav" rows="3" placeholder=""><?php echo h($conf['nav'])?></textarea><font color="green">填写格式：链接文字*链接地址|链接文字*链接地址</font></div>
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">底部悬浮条</label>
@@ -141,7 +144,7 @@ location ~* /([^/]+\.[^/]+)$ {
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">强制改为下载的文件扩展名</label>
-	  <div class="col-sm-9"><input type="text" name="download_ext" value="<?php echo $conf['download_ext']; ?>" class="form-control" placeholder="多个后缀名用,隔开"/><font color="green">在这里填写扩展名后，可解决图片、视频等文件，点击下载会直接在浏览器中预览的问题。需要先<a href="#" data-toggle="modal" data-target="#rewrite">配置伪静态</a></font></div>
+	  <div class="col-sm-9"><input type="text" name="download_ext" value="<?php echo h($conf['download_ext']); ?>" class="form-control" placeholder="多个后缀名用,隔开"/><font color="green">在这里填写扩展名后，可解决图片、视频等文件，点击下载会直接在浏览器中预览的问题。需要先<a href="#" data-toggle="modal" data-target="#rewrite">配置伪静态</a></font></div>
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">文本编辑器选择</label>
@@ -180,7 +183,7 @@ location ~* /([^/]+\.[^/]+)$ {
   <form onsubmit="return setAccount(this)" method="post" role="form">
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">用户名</label>
-	  <div class="col-sm-9"><input type="text" name="username" value="<?php echo $conf['admin_username']; ?>" class="form-control" required/></div>
+	  <div class="col-sm-9"><input type="text" name="username" value="<?php echo h($conf['admin_username']); ?>" class="form-control" required/></div>
 	</div>
 	<div class="form-group row">
 	  <label class="col-sm-3 col-form-label">旧密码</label>
